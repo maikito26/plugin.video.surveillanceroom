@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+  <string id="32000">Foscam 4 Kodi</string>
+  <string id="32001">Camera 1</string>
+  <string id="32002">Camera 2</string>
+  <string id="32003">Camera 3</string>
+  <string id="32004">Camera 4</string>
+  <string id="32005"></string>
+  <string id="32006"></string>
+  <string id="32007">All Cameras</string>
+  <string id="32008"></string>
+  <string id="32009"></string>
+  <string id="32010"></string>  
+  <string id="32011">Settings</string>
+  <string id="32012"></string> 
+  <string id="32013"></string> 
+  <string id="32014"> </string> 
+  <string id="32015">Logging</string>
+  <string id="32016">Log Level</string>
+  <string id="32017">Off</string>
+  <string id="32018">Normal</string>
+  <string id="32019">Verbose</string>
+  <string id="32020">Foscam HD</string>
+  <string id="32021">Foscam - Override URL Manually</string>
+  <string id="32022">Other</string>
+  <string id="32023">Basic Settings</string> 
+  <string id="32024">Advanced Settings</string> 
+  <string id="32025">Camera</string>  
+  <string id="32026"></string> 
+  <string id="32027"></string> 
+  <string id="32028"></string>   
+  <string id="32029"></string> 
+  <string id="32030">Enable Camera</string>
+  <string id="32031">Type of Camera</string>
+  <string id="32032">Host</string>
+  <string id="32033">Port</string>
+  <string id="32034">Username</string>
+  <string id="32035">Password</string>
+  <string id="32036">Snapshot JPEG URL</string> 
+  <string id="32037">RTSP Stream URL</string>
+  <string id="32038">MJPEG Stream URL</string>
+  <string id="32039"></string>
+  <string id="32040"></string>
+  <string id="32041">Show Advanced Settings</string>
+  <string id="32042">Camera Features</string>
+  <string id="32043">Pan/Tilt is Supported</string>
+  <string id="32044">Motion Detection is Supported</string>
+  <string id="32045">Sound Detection is Supported</string>
+  <string id="32046">Enable and Use MJPEG Stream</string>
+  <string id="32047"></string>
+  <string id="32048"></string>
+  <string id="32049"></string>
+  <string id="32050"></string>
+  <string id="32051">Camera Preview Settings</string>
+  <string id="32052">Enable Preview</string>
+  <string id="32053">Preview Duration (seconds)</string>
+  <string id="32054">Preview Position</string>
+  <string id="32055">Bottom Right</string>
+  <string id="32056">Bottom Left</string>
+  <string id="32057">Top Left</string>
+  <string id="32058">Top Right</string> 
+  <string id="32059"></string>
+  <string id="32060">Preview Scale Factor</string>
+  <string id="32061">Motion Detection Activated</string>
+  <string id="32062">Sound Detection Activated</string>
+  <string id="32063">Alarm Check Interval (seconds)</string>
+  <string id="32064"></string>
+  <string id="32065"></string>
+  <string id="32066">Image Source</string>
+  <string id="32067">Snapshot - JPEG</string>
+  <string id="32068">Stream - MPJEG Converter</string>
+  <string id="32069"></string>
+  <string id="32070"></string>
+  <string id="32071">Alarm Settings on Camera</string>
+  <string id="32072">Update Camera Settings On Save</string>
+  <string id="32073">Motion Sensitivity</string>
+  <string id="32074">Motion Trigger Interval (seconds)</string>
+  <string id="32075">Sound Sensitivity</string>
+  <string id="32076">Sound Trigger Interval (seconds)</string>
+  <string id="32077">Low</string>
+  <string id="32078">Medium</string>
+  <string id="32079">High</string>
+  <string id="32080">Lower</string>
+  <string id="32081">Lowest</string>
+
+  
+  
+
+
+  
+</strings>
+
+

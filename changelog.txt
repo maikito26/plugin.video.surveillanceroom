@@ -1,0 +1,17 @@
+0.0.2 (Sep 11 2015)
+ - Resolved an issue that would occur over time with reaching the maximum number of windows.  The window logic change to now reuse the same window unless the settings are changed without a restart of Kodi
+ - Setting changes are now detected, and update within 10 seconds
+ - Updated KIL
+
+0.0.1 (Sep 1 2015)
+ - Initial Release
+ - Test on F19804p and F19831w using Firmware 2.11.1.118
+
+Known Issues List/Future Feature Dev List:
+- Does not update automatically when settings change.  The preview requires a Kodi restart (Resolved)
+- Ability to choose the same preview location and it is unpredictable how it looks if multiple alarms are detected and cameras are showing
+- Previews will display while running the main window
+- No ability to select single camera and use controls
+- Currently no JPEG or RTSP support
+- Ability to override the settings manually to be added, by providing the snapshot/mpjpeg URLs
+

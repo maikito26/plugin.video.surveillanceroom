@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.foscam4kodi"
+       name="Foscam 4 Kodi" 
+       version="0.0.1"
+       provider-name="Maikito26">
+  <requires>
+    <import addon="xbmc.python" version="2.20.0" />
+    <import addon="script.module.requests" version="2.3.0" optional="false" />
+  </requires>
+  <extension point="xbmc.python.script" library="script.py" />
+  <extension point="xbmc.python.pluginsource" library="navigation.py">
+    <provides>video executable</provides>
+  </extension>
+  <extension point="xbmc.service" library="service.py" start="login" />
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">View a Foscam HD camera live stream and monitor motion and sound alarms</summary>
+    <description lang="en">This script shows the video feed from up to 4 Foscam HD cameras simultaneously.</description>
+    <disclaimer>This add-on is not affiliated with Foscam. This add-on will modify some settings on the camera itself such as motion and sound detection settings.</disclaimer>
+    <forum>http://forum.xbmc.org/showthread.php?tid=190439</forum>
+    <website>http://foscam.us/megapixel-ip-cameras-2/</website>
+    <source>https://github.com/maikito26/script.foscam4kodi.git</source>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+  </extension>
+</addon>
