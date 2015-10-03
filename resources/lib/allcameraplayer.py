@@ -1,7 +1,7 @@
 import xbmc, xbmcaddon, xbmcvfs, xbmcgui
 import threading, os, Queue, time
 import settings
-from resources.lib import imaging, monitor, foscam
+from resources.lib import monitor, foscam
 from urllib import urlretrieve
 
 
