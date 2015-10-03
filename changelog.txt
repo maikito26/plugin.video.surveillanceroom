@@ -1,17 +1,29 @@
-0.0.2 (Sep 11 2015)
- - Resolved an issue that would occur over time with reaching the maximum number of windows.  The window logic change to now reuse the same window unless the settings are changed without a restart of Kodi
- - Setting changes are now detected, and update within 10 seconds
- - Updated KIL
+v0.0.2 (Oct 2 2015)
+  Fixed Issues: 
+  - 2 addons showing for this in the Program Addons view.  -> Fixed by changing the extension point type in addon.xml from xbmc.python.script to xbmc.python.library 
+  - Single camera is slow to load. This is because it is testing the connection first.  -> Fixed by changing the settings call for Level 2 instead of Level 3.  Level 3 tests the connection first and Level 2 uses the cached result.
+  - Dismissal time was not captured. -> Fixed now by making sure preview window sets the dismissed time on a close action.
 
-0.0.1 (Sep 1 2015)
- - Initial Release
- - Test on F19804p and F19831w using Firmware 2.11.1.118
+  New Features:
+  - Ability to open the camera to full display if selected from the preview (Select or Enter).  This will stop any currently playing media.  When Exited, the previously playing media will play again from where it stopped minue 10 seconds.
 
-Known Issues List/Future Feature Dev List:
-- Does not update automatically when settings change.  The preview requires a Kodi restart (Resolved)
-- Ability to choose the same preview location and it is unpredictable how it looks if multiple alarms are detected and cameras are showing
-- Previews will display while running the main window
-- No ability to select single camera and use controls
-- Currently no JPEG or RTSP support
-- Ability to override the settings manually to be added, by providing the snapshot/mpjpeg URLs
+  Features in Progress:
+  - Ability to choose which windows not to show for if opened (ie home screen, system settings, content selection panes, etc)  -> Just needs settings implementation... like the 2 below.
+  - Configurable playback start time after preview is selected to play fullscreen - Half implemented.  Just need to create settings and the globalSettings() function, then add the variable to the monitor.reset() call
+  - Configurable dismissal time (hardcoded at 15 right now) and configurable behavior (all cameras or just that one camera)  -> Half implented by adding logic to the global monitor.  globalSettings will need to update on monitor.reset() call.
+
+  Known Issues:
+  - Timeout of 2 seconds added to camera test connection which sometimes is flaky since the result is cached until kodi restarts or the settings change.
+  - Trigger interval is allowed to be 0 in the code which causes a camera thread to hang. This is a bug from the camera itself which I discovered so I'm not sure if I should put a check into it. Camera value should be 5-15 but somehow my one camera became 0-10 which is not correct. I will try to reset it to factory to see if this resolves it.
+  - Occasionally I found that a camera can 'die'. This requires a reboot of Kodi to resolve since its the Kodi window manager having an issue with a control. I think I have a way to detect it and try to programatically fix it, but if it still fails I should be able to send a notifaction dialog to reboot kodi and try again. (While still allowing it to run, albeit glitchier...erm the image in the all camera view stutters) 
+  - If playback ends on its own, controls stay on screen until closed manually.
+  - Icons and fanart aren't correct for this new plugin name.
+
+
+v0.0.1 (Oct 1 2015)
+ - Initial Alpha Test Release
+ - Tested on F19804p and F19831w using Firmware 2.11.1.118
+
+
+
 

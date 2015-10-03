@@ -1,10 +1,14 @@
+'''
+Text Here
+'''
+
 import xbmc
 from xbmcgui import Window, getCurrentWindowId, getCurrentWindowDialogId
 import time
 
-MENU_SETTINGS_ID = 10140
-MENU_CONTEXT_ID = 10106
-DISMISSED_INTERVAL = 15     #Seconds
+#MENU_SETTINGS_ID = 10140
+#MENU_CONTEXT_ID = 10106
+#DISMISSED_INTERVAL = 15     #Seconds
 
 
 class AddonMonitor(xbmc.Monitor):
@@ -26,8 +30,13 @@ class AddonMonitor(xbmc.Monitor):
         if not self.stopped():
             self.stop()
         
-    def reset(self):
+    def reset(self, global_settings = None):
         self._stop = False
+        self.preview_dismissal_time = 15                                #global_settings[0]
+        self.preview_dismissal_behavior = 0                             #global_settings[1]      #0 - All dismissed, 1 - Just the window itself
+        self.preview_manual_open_behavior = 0                           #global_settings[2]      #0 - Stay Open until Manually Closed, 1 - Use the interval time
+        self.preview_disable_display_for_window_id = [10140, 10106]     #global_settings[3]
+        self._playback_resume_time = 10                                 #global_settings[4]
 
     def stop(self):
         self._stop = True
@@ -38,6 +47,8 @@ class AddonMonitor(xbmc.Monitor):
     def stopped(self):
         return self._stop
 
+    def playback_resume_time(self):
+        return self._playback_resume_time
 
     '''
     Functions used to communicate across service threads, to determine status of each
@@ -56,17 +67,29 @@ class AddonMonitor(xbmc.Monitor):
     Functions used to delay the next time the preview window is shown if it is dismissed
     '''
     def set_dismissed_preview(self, camera_number):
-        self._preview_dismissed_time[int(camera_number)] = time.time() + DISMISSED_INTERVAL
+        dismissed_until = time.time() + self.preview_dismissal_time
+        if self.preview_dismissal_behavior == 0:
+            self._preview_dismissed_time[0] = dismissed_until
+        else:
+            self._preview_dismissed_time[int(camera_number)] = dismissed_until
 
     def clear_dismissed_preview(self, camera_number):
         self._preview_dismissed_time[int(camera_number)] = 0
 
     def preview_dismissed(self, camera_number):
-        if self._preview_dismissed_time[int(camera_number)] == 0:
-            return False
-        if time.time() > self._preview_dismissed_time[int(camera_number)]:
-            self.clear_dismissed_preview(camera_number)
-            return False
+        if self.preview_dismissal_behavior == 0:
+            if self._preview_dismissed_time[0] == 0:
+                return False
+            if time.time() > self._preview_dismissed_time[0]:
+                self.clear_dismissed_preview(0)
+                return False
+            
+        else:
+            if self._preview_dismissed_time[int(camera_number)] == 0:
+                return False
+            if time.time() > self._preview_dismissed_time[int(camera_number)]:
+                self.clear_dismissed_preview(camera_number)
+                return False
         return True
     
 
@@ -99,10 +122,10 @@ class AddonMonitor(xbmc.Monitor):
     def settings_dialog_opened(self):
         current_dialog_id = getCurrentWindowDialogId()
 
-        if current_dialog_id == MENU_SETTINGS_ID or current_dialog_id == MENU_CONTEXT_ID:
-            return True
-        else:
-            return False
+        for window_id in self.preview_disable_display_for_window_id:
+            if current_dialog_id == window_id:
+                return True
+        return False
 
     '''
     Text Here

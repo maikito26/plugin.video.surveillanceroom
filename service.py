@@ -4,7 +4,7 @@
 
 import xbmc, xbmcaddon, xbmcvfs
 import threading, time, os, Queue
-from resources.lib import foscam, imaging, monitor, gui, settings
+from resources.lib import foscam, monitor, previewgui, settings
 
 __addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
@@ -38,7 +38,7 @@ class CameraPreviewThread(threading.Thread):
         
         print camera_number + " : Camera thread started"
         
-        previewWindow = gui.CameraPreviewWindow(self.camera, monitor)
+        previewWindow = previewgui.CameraPreviewWindow(self.camera, monitor)
         
         with foscam.Camera(self.camera) as connected_camera:
             
@@ -144,7 +144,7 @@ class service():
         if configured_ok:
             x = 0
             for camera in preview_enabled_cameras:
-                t = threading.Thread(target = imaging.ImageWorker, args = (monitor, q, __path__))
+                t = threading.Thread(target = previewgui.ImageWorker, args = (monitor, q, __path__))
                 t.daemon = True
                 t.start()
                 

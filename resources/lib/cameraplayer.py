@@ -1,9 +1,18 @@
-import gui
-import xbmc
-import xbmcgui
+'''
+Text Here!
+'''
+
+import xbmc, xbmcgui, xbmcaddon
 import foscam
 from functools import partial
 
+__addon__ = xbmcaddon.Addon()
+__addonid__ = __addon__.getAddonInfo('id')
+
+''' Common GUI images '''
+__btnimage__ = xbmc.translatePath('special://home/addons/%s/resources/media/{0}.png' %__addonid__ ).decode('utf-8')
+
+''' Keyboard input values '''
 ACTION_PREVIOUS_MENU = 10
 ACTION_BACKSPACE = 110
 ACTION_NAV_BACK = 92
@@ -11,8 +20,57 @@ ACTION_STOP = 13
 ACTION_SELECT_ITEM = 7
 
 
+class Button(xbmcgui.ControlButton):
+    '''
+    Class reclasses the ControlButton class for use in this addon.
+    '''
+    
+    WIDTH = HEIGHT = 32
 
-class MoveButton(gui.Button):
+    def __new__(cls, parent, action, x, y, camera = None, scaling = 1.0):
+        focusTexture    = __btnimage__.format(action)
+        noFocusTexture  = __btnimage__.format(action+ '_nofocus')
+        width           = int(round(cls.WIDTH * scaling))
+        height          = int(round(cls.HEIGHT * scaling))
+        
+        self = super(Button, cls).__new__(cls, x, y, width, height, '',
+                                          focusTexture, noFocusTexture)
+        parent.buttons.append(self)
+        return self
+
+
+class ToggleButton(xbmcgui.ControlRadioButton):
+    '''
+    Class reclasses the RadioButton class for use in this addon.
+    '''
+    
+    WIDTH = 110
+    HEIGHT = 40
+
+    def __new__(cls, parent, action, x, y, camera):
+        focusOnTexture      = __btnimage__.format('radio-on')
+        noFocusOnTexture    = __btnimage__.format('radio-on')
+        focusOffTexture     = __btnimage__.format('radio-off')
+        noFocusOffTexture   = __btnimage__.format('radio-off')
+        focusTexture        = __btnimage__.format('back')
+        noFocusTexture      = __btnimage__.format('trans')
+        textOffsetX         = 12
+
+        self = super(ToggleButton, cls).__new__(cls, x, y, cls.WIDTH, cls.HEIGHT, action.title(),
+                                                focusOnTexture, noFocusOnTexture,
+                                                focusOffTexture, noFocusOffTexture,
+                                                focusTexture, noFocusTexture,
+                                                textOffsetX)
+
+        self.action = action
+        parent.buttons.append(self)
+        return self
+
+    def send_cmd(self, control):
+        return self.cmd.set_enabled(control.isSelected())
+
+
+class MoveButton(Button):
     def __init__(self, parent, direction, x, y, camera):
         self.cmd = partial(camera.move, direction)
 
@@ -20,7 +78,7 @@ class MoveButton(gui.Button):
         return self.cmd()
 
 
-class MirrorFlipButton(gui.ToggleButton):
+class MirrorFlipButton(ToggleButton):
     def __init__(self, parent, action, x, y, camera):
         self.cmd = partial(camera.toggle_mirror_flip, action)
 
@@ -86,8 +144,8 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
         self.home_button        = MoveButton(self, 'home', OFFSET1+X_OFFSET, OFFSET1+Y_OFFSET, self.camera)
         self.flip_button        = MirrorFlipButton(self, 'flip', 30, Y_OFFSET+200, self.camera)        
         self.mirror_button      = MirrorFlipButton(self, 'mirror', 30, Y_OFFSET+260, self.camera)  
-        self.close_button       = gui.Button(self, 'close', 1280-60, 20)       
-        self.settings_button    = gui.Button(self, 'settings', 1280-120, 20)
+        self.close_button       = Button(self, 'close', 1280-60, 20)       
+        self.settings_button    = Button(self, 'settings', 1280-120, 20)
 
         self.addControl(self.up_button)
         self.addControl(self.left_button)
@@ -199,7 +257,7 @@ class StopResumePlayer(xbmc.Player):
 
     def maybe_resume_previous(self):
         if self.previous_file is not None:
-            resume_time_str = "{0:.1f}".format(self.resume_time - 10.)
+            resume_time_str = "{0:.1f}".format(self.resume_time - self.monitor.playback_resume_time())
             print "Resuming {0} at {1}".format(self.previous_file, resume_time_str)
             listitem = xbmcgui.ListItem()
             listitem.setProperty('StartOffset', resume_time_str)
@@ -207,7 +265,7 @@ class StopResumePlayer(xbmc.Player):
 
 
 
-def playCameraVideo(camera_settings, monitor = None):
+def playCameraVideo(camera_settings, monitor):
     '''
     Text Here
     '''

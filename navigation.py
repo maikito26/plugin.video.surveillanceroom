@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     # Single Camera Stream   
     else:
-        settings_ok, cameras = getSettings(settings_to_get = 'all', cameras_to_get = mode)
+        settings_ok, cameras = getSettings(settings_to_get = 'features', cameras_to_get = mode)
         camera = cameras[0]
         if settings_ok:
             playCameraVideo(camera, monitor)

@@ -114,7 +114,7 @@ class Camera(object):
 
         #common.log_verbose(url)
         try:
-            response = requests.get(url, timeout=2.000)
+            response = requests.get(url, timeout=2.000) #Added timeout
         except (requests.RequestException) as e:
             xbmc.log(str(e), xbmc.LOGERROR)
             return False
