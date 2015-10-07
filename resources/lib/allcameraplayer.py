@@ -81,11 +81,13 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
 
                 if len(cameras) > i:
                     camera = cameras[i]
-                    url = camera[6]
-                    #c = [url, img1, img2]       #SnapShot
-                    c = [camera, img1, img2, img3]       #MJPEG
-                    #t = threading.Thread(target=self.getImages, args=(i+1, c, __path__))    #Snapshot
-                    t = threading.Thread(target=self.getImagesMjpeg, args=(i+1, c, __path__))    #MJPEG
+                    if camera[11] == 0:     #MJPEG
+                        c = [camera, img1, img2]
+                        t = threading.Thread(target=self.getImagesMjpeg, args=(i+1, c, __path__))
+                    else:                   #Snapshot
+                        url = camera[6]
+                        c = [url, img1, img2]
+                        t = threading.Thread(target=self.getImages, args=(i+1, c, __path__))
                     t.start()
 
                 else:
@@ -175,8 +177,6 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
                 xbmcvfs.delete(os.path.join(path, 'AllCamera_%d.%d.jpg') %(i, x - 1))
                 monitor.waitForAbort(.01)
                 c[2].setImage(filename, useCache=False)
-                
-                #c[3].setImage(filename, useCache=False)
                 x += 1
                 
             else:

@@ -86,10 +86,15 @@ class Camera(object):
         self._cmdUrl = "http://{0}:{1}/cgi-bin/CGIProxy.fcgi?cmd={{0}}&usr={2}&pwd={3}".format(host, port, username, password)
         self._streamUrl = "http://{0}:{1}/cgi-bin/CGIStream.cgi?cmd={{cmd}}&usr={2}&pwd={3}&".format(host, port, username, password)
         self._videoUrl = "rtsp://{0}:{1}@{2}:{3}/videoMain".format(username, password, host, port)
+        self._videoSubUrl = "rtsp://{0}:{1}@{2}:{3}/videoSub".format(username, password, host, port)
 
     @property
     def video_url(self):
         return self._videoUrl
+
+    @property
+    def video_sub_url(self):
+        return self._videoSubUrl
 
     @property
     def mjpeg_url(self):

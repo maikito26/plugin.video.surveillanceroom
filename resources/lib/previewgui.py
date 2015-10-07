@@ -4,16 +4,14 @@ Text Here!
 
 import xbmc, xbmcaddon, xbmcgui, xbmcvfs
 import os   #, time
-from urllib import urlretrieve
-import foscam
 from cameraplayer import playCameraVideo
 
 __addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
 
 ''' Common GUI images '''
-__loader__ = xbmc.translatePath('special://home/addons/%s/resources/media/loader.gif' %__addonid__ ).decode('utf-8')
 __holder__ = xbmc.translatePath('special://home/addons/%s/resources/media/holder.png' %__addonid__ ).decode('utf-8')
+__black__ = xbmc.translatePath('special://home/addons/%s/resources/media/black.png' %__addonid__ ).decode('utf-8')
 __btnimage__ = xbmc.translatePath('special://home/addons/%s/resources/media/{0}.png' %__addonid__ ).decode('utf-8')
 
 ''' Keyboard input values '''
@@ -37,7 +35,7 @@ def cleanup_images(f, path):
             except: pass  
 
 
-def ImageWorker(monitor, q, path):
+def ImageWorker(monitor, q, path, snapShot_type):
     '''
     Thread worker that receives a window to update the image of continuously until that window is closed
     '''
@@ -49,12 +47,11 @@ def ImageWorker(monitor, q, path):
         try:
             item = q.get(block = False)
             
-            if item[2]:
-                frameByMjpeg(item, monitor, path)       #Approx 10fps
+            if not snapShot_type:
+                frameByMjpeg(item, monitor, path)       #Approx 10-30fps
             else: 
                 frameBySnapshot(item, monitor, path)    #Approx 2-4fps
             
-
             camera_number = item[0][0]
             cleanup_images('preview_%s.' %camera_number, path)
 
@@ -65,14 +62,18 @@ def ImageWorker(monitor, q, path):
         
 
 def frameBySnapshot(item, monitor, path):
+    '''
+    Text Here
+    '''
+    
     camera_settings = item[0]
     camera_number = camera_settings[0]
     snapshotURL = camera_settings[6]
     control = item[1]
+    from urllib import urlretrieve
     
     #starttime = time.time()
     x = 0
-    
     while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera_number):
     
         filename = os.path.join(path, 'preview_%s.%d.jpg') %(camera_number, x)
@@ -97,6 +98,10 @@ def frameBySnapshot(item, monitor, path):
 
 
 def get_mjpeg_frame(stream):
+    '''
+    Text Here
+    '''
+    
     content_length = ""
     try:
         while not "Length" in content_length: 
@@ -111,10 +116,15 @@ def get_mjpeg_frame(stream):
     
 
 def frameByMjpeg(item, monitor, path):
+    '''
+    Text Here
+    '''
+        
     camera_settings = item[0]
     camera_number = camera_settings[0]
     control = item[1]
 
+    import foscam
     camera = foscam.Camera(camera_settings)
     stream = camera.get_mjpeg_stream()
         
@@ -146,8 +156,6 @@ def frameByMjpeg(item, monitor, path):
 
 
 
-    
-
 
 class Button(xbmcgui.ControlButton):
     '''
@@ -177,9 +185,19 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         self.camera_settings = camera_settings
         self.monitor = monitor
         self.camera_number = camera_settings[0]
+        
+        self.monitor.preview_window_reset(self.camera_number)
+
+       # Can be used to capture self's window id
+        #self.show()
+        #monitor.waitForAbort(.07)   
+        #self.monitor.set_preview_window_id(self.camera_number)
+        #monitor.waitForAbort(.07) 
+        #self.close()
+
         self.snapshotURL = camera_settings[6]
-        scaling = camera_settings[16]
-        position = camera_settings[15]
+        scaling = camera_settings[19]
+        position = camera_settings[18]
         self.setProperty('zorder', "99")
         self._stopped = True
         self.buttons = []
@@ -187,11 +205,13 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         '''
         Positioning of the window
         '''
+        
         WIDTH = 320
         HEIGHT = 180
         width = int(float(WIDTH * scaling))
         height = int(float(HEIGHT * scaling))
-
+        
+        
         if 'bottom' in position:
             y = 720 - height
         else:
@@ -209,7 +229,10 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
 
         animations = [('WindowOpen', ("effect=slide start={0:d} time=1300 tween=cubic easing=out").format(start)),
                       ('WindowClose', ("effect=slide end={0:d} time=900 tween=back easing=inout").format(start))]
-        
+
+        self.black = xbmcgui.ControlImage(x, y, width, height, __black__)
+        self.addControl(self.black)
+        self.black.setAnimations(animations)
         
         self.img1 = xbmcgui.ControlImage(x, y, width, height, '')
         self.img2 = xbmcgui.ControlImage(x, y, width, height, '')
@@ -229,7 +252,7 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         self.show()
 
     def stop(self):
-        self.monitor.preview_window_close(self.camera_number)
+        self.monitor.preview_window_reset(self.camera_number)
         self.monitor.waitForAbort(.2)
         self.close()
 
@@ -247,7 +270,7 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
             
     def run(self):
         self.stop()
-        playCameraVideo(self.camera_settings, self.monitor)
+        playCameraVideo(self.camera_number, self.monitor)
         #xbmc.executebuiltin("RunAddon({0})".format(utils.addon_info('id')))
         
 

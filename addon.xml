@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.foscam4kodi"
        name="Foscam 4 Kodi" 
-       version="0.0.2"
+       version="0.1.0"
        provider-name="Maikito26">
   <requires>
     <import addon="xbmc.python" version="2.20.0" />
     <import addon="script.module.requests" version="2.3.0" optional="false" />
   </requires>
-  <extension point="xbmc.python.script" library="script.py" />
+  <extension point="xbmc.python.library" library="script.py" />
   <extension point="xbmc.python.pluginsource" library="navigation.py">
     <provides>video executable</provides>
   </extension>
