@@ -17,7 +17,7 @@
     <summary lang="en">View a Foscam HD camera live stream and monitor motion and sound alarms</summary>
     <description lang="en">This script shows the video feed from up to 4 Foscam HD cameras simultaneously.</description>
     <disclaimer>This add-on is not affiliated with Foscam. This add-on will modify some settings on the camera itself such as motion and sound detection settings.</disclaimer>
-    <forum>http://forum.xbmc.org/showthread.php?tid=190439</forum>
+    <forum>http://forum.kodi.tv/showthread.php?tid=240768</forum>
     <website>http://foscam.us/megapixel-ip-cameras-2/</website>
     <source>https://github.com/maikito26/script.foscam4kodi.git</source>
     <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
