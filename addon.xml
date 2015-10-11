@@ -14,8 +14,8 @@
   <extension point="xbmc.service" library="service.py" start="login" />
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary lang="en">Surveillance Room is a full featured IP Camera viewer.  Originally designed for Foscam HD IP cameras, this addon can live stream and monitor motion and sound alarms for up to 4 IP Cameras</summary>
-    <description lang="en">This script shows the video feed from up to 4 IP Cameras simultaneously, or individaully.  It can detect motion or sound for Foscam HD cameras at the same time, or be called to show a preview by a button or a script.</description>
+    <summary>Surveillance Room is a full featured IP Camera viewer.  Originally designed for Foscam HD IP cameras, this addon can live stream and monitor motion and sound alarms for up to 4 IP Cameras</summary>
+    <description>This script shows the video feed from up to 4 IP Cameras simultaneously, or individaully.  It can detect motion or sound for Foscam HD cameras at the same time, or be called to show a preview by a button or a script.</description>
     <disclaimer>This add-on is not affiliated with Foscam. This add-on will modify some settings on the camera itself such as motion and sound detection settings.</disclaimer>
     <forum>http://forum.kodi.tv/showthread.php?tid=240768</forum>
     <website>http://foscam.us/megapixel-ip-cameras-2/</website>
