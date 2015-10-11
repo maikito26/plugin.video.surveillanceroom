@@ -1,60 +1,102 @@
-v0.1.0 (Oct 7 2015)
-  Fixed Issues: 
-  - No loader picture for previews.  -> Didn't add loader, but added Black background which also helps any potential image flicker
+v0.2.0 (Oct 7 2015)
+-------------------
+Fixed Issues: 
+- If playback ends on its own, controls stay on screen until closed manually.  -> Controls are now not drawn until playback has started and will close the control window through a callback
+- Camera perceived responsiveness to move button presses improved through a hack which plays the video starting ahead of current time.  Still requires good network connection.
+- Fixed sleep interval time as it was halfed
+- Reduced flicker in all_cameras even more on MJPEG by making it interlaced.  Considered a hack now, and will be included in a future setting option (as flicker was seen on AMD A6 but not i3 HTPCs)
+- Fixed issue where settings werent taking the MJPEG url manually due to a typo
+- Mjpeg -> JPEG stream used in the all camera player and previews were bound to foscam cameras for no real reason.
+- Several fixes related to generic IP camera support, tested on a DLink DCS-932L.
+.. Fixed settings to show preview settings for generic IP Cam
+.. Fixed issue where an array was out of bounds with 4th camera, no convesion in camera number since arrays start at 0
+.. Changed the MJPEG -> JPEG converter code to work with both Foscam and my D-Link.  Hopefully other MJPEG Generic IP Cameras will work similarly.
 
-  New Features:
-  - Ability to open camera stream/all camera player/preview RunScript() to use with key configuration or for use externally (home automation, etc)... and Future Context Menu integration capability as well!
-  ----> All Camera Player: 		RunScript(plugin.video.foscam4kodi, fullscreen, 0)
-  ----> Single Camera Player: 	RunScript(plugin.video.foscam4kodi, fullscreen, <camera_number>)
-  ----> Preview Window:			RunScript(plugin.video.foscam4kodi, preview, <camera_number>)
-  - Slight Overhaul of the settings menu to make more sense.  It's not pretty yet but allows for customization of more features described as follows.
-  --- Ability to choose between mainstream or *new* substream and MJPEG for single camera stream
-  --- Ability to configure using snapshots or MJPEG stream for previews and all camera player.  MJPEG is approx 10 FPS minimum, snapshots are 1FPS minimum by my tests.
-  --- Ability to choose which windows not to show for if opened (ie home screen, system settings, content selection panes, etc)  (Works but haven't performed exhaustive testing!)
-  --- Configurable playback start time after preview is selected to play fullscreen - (Works but haven't performed exhaustive testing!)
-  --- Configurable dismissal time (hardcoded at 15 right now) and configurable behavior (all cameras or just that one camera)  -> (Works but haven't performed exhaustive testing!)
-  - Camera controls will now display depending on what is supported by the camera on the single camera player (Excluding Zoom which is not yet implemented)
+New Features:
+- Added Support for Kodi 14 (Helix)
+- Renamed add-on as Surveillance Room, with new icon and fanart.  RunScripts will need to be updated to plugin.video.surveillanceroom
+- Improved Generic IP Camera Support, tested on 
+- Ability to rename cameras and it will display, but not update the FoscamHD camera itself.
+- Ability to set a preset of the current location in the single camera player.  If set, when the add-on service starts it will go to this preset location.  Preset can be removed too.
+- Zoom Buttons added to single player for supported FoscamHD cameras
+- All Camera Move Buttons are now FoscamHD functional
+- Camera Flip and Mirror buttons are now FoscamHD functional
+
+Features in Progress:
+- New Extended Menu with added options and tests.  To help in choosing configuration settings.
+- Moving camera API from foscam.py to foscam2.py for improved capabilities and reliability.
+- Adding options to settings to include: Anti-Flicker hack options; reset to preset home location on/off;  ptz sensitivity;  ptz speed; ability to service on/off globally
+
+Known Issues:
+- Trigger interval is allowed to be 0 in the code which causes a camera thread to hang. This is a bug from the camera itself which I discovered so I'm not sure if I should put a check into it. Camera value should be 5-15 but somehow my one camera became 0-10 which is not correct. I will try to reset it to factory to see if this resolves it.
+- Z-Order of windows isn't optimized if calling from the script for multiple player types.  Not a likely scenario but some 'error' logic can be added to prevent any potential issues
+- If multiple preview windows are opened, you can only close the window by mouse which was opened last.
+**NEW** - Preset and Zoom buttons are not included in remote/keyboard navigation scheme yet
+**NEW** - Screensaver will come on during All Camera player when its playing
+**NEW** - Controls show on single camera player for generic IP Cameras when API doesn't work for them
   
-  Features in Progress:
-  - Ability to rename cameras and display that while playing for better user experience.  -> Added to settings but not used in main code yet.
+
+
+v0.1.0 (Oct 7 2015)
+-------------------
+Fixed Issues: 
+- No loader picture for previews.  -> Didn't add loader, but added Black background which also helps any potential image flicker
+
+New Features:
+- Camera controls will now display depending on what is supported by the camera on the single camera player (Excluding Zoom which is not yet implemented)
+- Ability to open camera stream/all camera player/preview RunScript() to use with key configuration or for use externally (home automation, etc)... and Future Context Menu integration capability as well!
+	All Camera Player: 	RunScript(plugin.video.foscam4kodi, fullscreen, 0)
+	Single Camera Player: 	RunScript(plugin.video.foscam4kodi, fullscreen, <camera_number>)
+	Preview Window:		RunScript(plugin.video.foscam4kodi, preview, <camera_number>)
+- Slight Overhaul of the settings menu to make more sense.  It's not pretty yet but allows for customization of more features described as follows.
+.. Ability to choose between mainstream or *new* substream and MJPEG for single camera stream
+.. Ability to configure using snapshots or MJPEG stream for previews and all camera player.  MJPEG is approx 10 FPS minimum, snapshots are 1FPS minimum by my tests.
+.. Ability to choose which windows not to show for if opened (ie home screen, system settings, content selection panes, etc)  (Works but haven't performed exhaustive testing!)
+.. Configurable playback start time after preview is selected to play fullscreen - (Works but haven't performed exhaustive testing!)
+.. Configurable dismissal time (hardcoded at 15 right now) and configurable behavior (all cameras or just that one camera)  -> (Works but haven't performed exhaustive testing!)
  
-  Known Issues:
-  - Timeout of 2 seconds added to camera test connection which sometimes is flaky since the result is cached until kodi restarts or the settings change.
-  - Trigger interval is allowed to be 0 in the code which causes a camera thread to hang. This is a bug from the camera itself which I discovered so I'm not sure if I should put a check into it. Camera value should be 5-15 but somehow my one camera became 0-10 which is not correct. I will try to reset it to factory to see if this resolves it.
-  - Occasionally I found that a camera can 'die'. This requires a reboot of Kodi to resolve since its the Kodi window manager having an issue with a control. I think I have a way to detect it and try to programatically fix it, but if it still fails I should be able to send a notifaction dialog to reboot kodi and try again. (While still allowing it to run, albeit glitchier...erm the image in the all camera view stutters) 
-  - If playback ends on its own, controls stay on screen until closed manually.
-  - Icons and fanart aren't correct for this plugin.
-  **NEW** - Z-Order of windows isn't optimized if calling from the script for multiple player types.  Not a likely scenario but some 'error' logic can be added to prevent any potential issues
-  **NEW** - If multiple preview windows are opened, you can only close the window by mouse which was opened last.
-  **NEW** - Mjpeg stream used in the all camera player and previews are bound to foscam cameras for no real reason.  This needs to be corrected. Work Around: Choose snapshot from the settings
-  **NEW** - Black background not added to all camera player
+Features in Progress:
+- Ability to rename cameras and display that while playing for better user experience.  -> Added to settings but not used in main code yet.
+ 
+Known Issues:
+- Timeout of 2 seconds added to camera test connection which sometimes is flaky since the result is cached until kodi restarts or the settings change.
+- Trigger interval is allowed to be 0 in the code which causes a camera thread to hang. This is a bug from the camera itself which I discovered so I'm not sure if I should put a check into it. Camera value should be 5-15 but somehow my one camera became 0-10 which is not correct. I will try to reset it to factory to see if this resolves it.
+- Occasionally I found that a camera can 'die'. This requires a reboot of Kodi to resolve since its the Kodi window manager having an issue with a control. I think I have a way to detect it and try to programatically fix it, but if it still fails I should be able to send a notifaction dialog to reboot kodi and try again. (While still allowing it to run, albeit glitchier...erm the image in the all camera view stutters) 
+- If playback ends on its own, controls stay on screen until closed manually.
+- Icons and fanart aren't correct for this plugin.
+**NEW** - Z-Order of windows isn't optimized if calling from the script for multiple player types.  Not a likely scenario but some 'error' logic can be added to prevent any potential issues
+**NEW** - If multiple preview windows are opened, you can only close the window by mouse which was opened last.
+**NEW** - Mjpeg stream used in the all camera player and previews are bound to foscam cameras for no real reason.  This needs to be corrected. Work Around: Choose snapshot from the settings
+**NEW** - Black background not added to all camera player
 
 
 v0.0.2 (Oct 2 2015)
-  Fixed Issues: 
-  - 2 addons showing for this in the Program Addons view.  -> Fixed by changing the extension point type in addon.xml from xbmc.python.script to xbmc.python.library 
-  - Single camera is slow to load. This is because it is testing the connection first.  -> Fixed by changing the settings call for Level 2 instead of Level 3.  Level 3 tests the connection first and Level 2 uses the cached result.
-  - Dismissal time was not captured. -> Fixed now by making sure preview window sets the dismissed time on a close action.
+-------------------
+Fixed Issues: 
+- 2 addons showing for this in the Program Addons view.  -> Fixed by changing the extension point type in addon.xml from xbmc.python.script to xbmc.python.library 
+- Single camera is slow to load. This is because it is testing the connection first.  -> Fixed by changing the settings call for Level 2 instead of Level 3.  Level 3 tests the connection first and Level 2 uses the cached result.
+- Dismissal time was not captured. -> Fixed now by making sure preview window sets the dismissed time on a close action.
 
-  New Features:
-  - Ability to open the camera to full display if selected from the preview (Select or Enter).  This will stop any currently playing media.  When Exited, the previously playing media will play again from where it stopped minue 10 seconds.
+New Features:
+- Ability to open the camera to full display if selected from the preview (Select or Enter).  This will stop any currently playing media.  When Exited, the previously playing media will play again from where it stopped minue 10 seconds.
 
-  Features in Progress:
-  - Ability to choose which windows not to show for if opened (ie home screen, system settings, content selection panes, etc)  -> Just needs settings implementation... like the 2 below.
-  - Configurable playback start time after preview is selected to play fullscreen - Half implemented.  Just need to create settings and the globalSettings() function, then add the variable to the monitor.reset() call
-  - Configurable dismissal time (hardcoded at 15 right now) and configurable behavior (all cameras or just that one camera)  -> Half implented by adding logic to the global monitor.  globalSettings will need to update on monitor.reset() call.
+Features in Progress:
+- Ability to choose which windows not to show for if opened (ie home screen, system settings, content selection panes, etc)  -> Just needs settings implementation... like the 2 below.
+- Configurable playback start time after preview is selected to play fullscreen - Half implemented.  Just need to create settings and the globalSettings() function, then add the variable to the monitor.reset() call
+- Configurable dismissal time (hardcoded at 15 right now) and configurable behavior (all cameras or just that one camera)  -> Half implented by adding logic to the global monitor.  globalSettings will need to update on monitor.reset() call.
 
-  Known Issues:
-  - Timeout of 2 seconds added to camera test connection which sometimes is flaky since the result is cached until kodi restarts or the settings change.
-  - Trigger interval is allowed to be 0 in the code which causes a camera thread to hang. This is a bug from the camera itself which I discovered so I'm not sure if I should put a check into it. Camera value should be 5-15 but somehow my one camera became 0-10 which is not correct. I will try to reset it to factory to see if this resolves it.
-  - Occasionally I found that a camera can 'die'. This requires a reboot of Kodi to resolve since its the Kodi window manager having an issue with a control. I think I have a way to detect it and try to programatically fix it, but if it still fails I should be able to send a notifaction dialog to reboot kodi and try again. (While still allowing it to run, albeit glitchier...erm the image in the all camera view stutters) 
-  - If playback ends on its own, controls stay on screen until closed manually.
-  - Icons and fanart aren't correct for this new plugin name.
+Known Issues:
+- Timeout of 2 seconds added to camera test connection which sometimes is flaky since the result is cached until kodi restarts or the settings change.
+- Trigger interval is allowed to be 0 in the code which causes a camera thread to hang. This is a bug from the camera itself which I discovered so I'm not sure if I should put a check into it. Camera value should be 5-15 but somehow my one camera became 0-10 which is not correct. I will try to reset it to factory to see if this resolves it.
+- Occasionally I found that a camera can 'die'. This requires a reboot of Kodi to resolve since its the Kodi window manager having an issue with a control. I think I have a way to detect it and try to programatically fix it, but if it still fails I should be able to send a notifaction dialog to reboot kodi and try again. (While still allowing it to run, albeit glitchier...erm the image in the all camera view stutters) 
+- If playback ends on its own, controls stay on screen until closed manually.
+- Icons and fanart aren't correct for this new plugin name.
 
 
 v0.0.1 (Oct 1 2015)
- - Initial Alpha Test Release
- - Tested on F19804p and F19831w using Firmware 2.11.1.118
+-------------------
+- Initial Alpha Test Release
+- Tested on F19804p and F19831w using Firmware 2.11.1.118
 
 
 

@@ -3,7 +3,7 @@ Text Here!
 '''
 
 import xbmc, xbmcgui, xbmcaddon
-from settings import getSettings, get_playbackRewindTime
+from settings import getSettings, get_playbackRewindTime, notify
 from functools import partial
 
 __addon__ = xbmcaddon.Addon()
@@ -27,7 +27,7 @@ class Button(xbmcgui.ControlButton):
     
     WIDTH = HEIGHT = 32
 
-    def __new__(cls, parent, action, x, y, camera = None, scaling = 1.0):
+    def __new__(cls, parent, action, x, y, scaling = 1.0):
         focusTexture    = __btnimage__.format(action)
         noFocusTexture  = __btnimage__.format(action+ '_nofocus')
         width           = int(round(cls.WIDTH * scaling))
@@ -47,7 +47,7 @@ class ToggleButton(xbmcgui.ControlRadioButton):
     WIDTH = 110
     HEIGHT = 40
 
-    def __new__(cls, parent, action, x, y, camera):
+    def __new__(cls, parent, action, x, y):
         focusOnTexture      = __btnimage__.format('radio-on')
         noFocusOnTexture    = __btnimage__.format('radio-on')
         focusOffTexture     = __btnimage__.format('radio-off')
@@ -70,22 +70,6 @@ class ToggleButton(xbmcgui.ControlRadioButton):
         return self.cmd.set_enabled(control.isSelected())
 
 
-class MoveButton(Button):
-    def __init__(self, parent, direction, x, y, camera):
-        self.cmd = partial(camera.move, direction)
-
-    def send_cmd(self, control=None):
-        return self.cmd()
-
-
-class MirrorFlipButton(ToggleButton):
-    def __init__(self, parent, action, x, y, camera):
-        self.cmd = partial(camera.toggle_mirror_flip, action)
-
-    def send_cmd(self, control=None):
-        return self.cmd(control.isSelected())
-
-
 
 class CameraControlsWindow(xbmcgui.WindowDialog):
     '''
@@ -103,26 +87,21 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
         self.camera_settings = camera_settings
         self.camera_number = camera_settings[0]
 
-        import foscam
-        self.camera = foscam.Camera(camera_settings)
+        import foscam2
+        self.camera = foscam2.FoscamCamera(camera_settings)
     
     def __enter__(self):
         return self
     
     def start(self):
         self.playVideo()
-        self.setupUi()
-
-        #mirror, flip = self.camera.get_mirror_and_flip()
-        #self.mirror_button.setSelected(mirror)
-        #self.flip_button.setSelected(flip)
-
+        #self.setupUi()
         self.doModal()
 
 
     def playVideo(self):
         source = self.camera_settings[10]
-        self.player = StopResumePlayer(**{'camera_number': self.camera_number, 'monitor': self.monitor})
+        self.player = StopResumePlayer(**{'camera_number': self.camera_number, 'monitor': self.monitor, 'callback1': self.setupUi, 'callback2': self.stop})
         self.player.maybe_stop_current()
 
         if source == 0:   #Mjpeg 
@@ -130,7 +109,9 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
         else:                   #Main or Substream
             url = self.camera_settings[7]
 
-        self.player.play(url)
+        listitem = xbmcgui.ListItem()
+        listitem.setProperty('StartOffset', '20')   #Hack to improve perceived responsiveness of Stream and Button Presses
+        self.player.play(url, listitem)
         
     def setupUi(self):
         Y_OFFSET    = 100
@@ -138,13 +119,13 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
         OFFSET1     = 32
         OFFSET2     = 64
 
-        pan_tilt    = self.camera_settings[12]
-        zoom        = self.camera_settings[13]
+        self.pan_tilt    = self.camera_settings[12]
+        self.zoom        = self.camera_settings[13]
         
         self.buttons = []
 
-        self.flip_button        = MirrorFlipButton(self, 'flip', 30, Y_OFFSET+200, self.camera)        
-        self.mirror_button      = MirrorFlipButton(self, 'mirror', 30, Y_OFFSET+260, self.camera)  
+        self.flip_button        = ToggleButton(self, 'flip', 30, Y_OFFSET+200)        
+        self.mirror_button      = ToggleButton(self, 'mirror', 30, Y_OFFSET+260)  
         self.close_button       = Button(self, 'close', 1280-60, 20)       
         self.settings_button    = Button(self, 'settings', 1280-120, 20)
         self.addControl(self.flip_button)
@@ -154,49 +135,61 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
         self.flip_button.setNavigation      (self.settings_button,      self.mirror_button,     self.close_button,      self.settings_button)
         self.mirror_button.setNavigation    (self.flip_button,      self.close_button,         self.close_button,      self.settings_button)
         self.settings_button.setNavigation  (self.mirror_button,    self.flip_button,     self.flip_button,      self.close_button)
+
+        response_ok, response = self.camera.get_mirror_and_flip_setting()
+        if response_ok == 0:
+            self.mirror_button.setSelected(int(response.get('isMirror')))
+            self.flip_button.setSelected(int(response.get('isFlip')))
+        
         self.close_button.setNavigation     (self.mirror_button,    self.flip_button,     self.settings_button,   self.flip_button)
 
-
-        if pan_tilt:
+        if self.pan_tilt:
             
-            self.up_button          = MoveButton(self, 'up', OFFSET1+X_OFFSET, Y_OFFSET, self.camera)
-            self.left_button        = MoveButton(self, 'left', X_OFFSET, OFFSET1+Y_OFFSET, self.camera)        
-            self.down_button        = MoveButton(self, 'down', OFFSET1+X_OFFSET, OFFSET2+Y_OFFSET, self.camera)    
-            self.right_button       = MoveButton(self, 'right', OFFSET2+X_OFFSET, OFFSET1+Y_OFFSET, self.camera)
-            self.left_up_button     = MoveButton(self, 'left_up', X_OFFSET, Y_OFFSET, self.camera)
-            self.right_up_button    = MoveButton(self, 'right_up', OFFSET2+X_OFFSET, Y_OFFSET, self.camera)
-            self.right_down_button  = MoveButton(self, 'right_down', OFFSET2+X_OFFSET, OFFSET2+Y_OFFSET, self.camera)
-            self.left_down_button   = MoveButton(self, 'left_down', X_OFFSET, OFFSET2+Y_OFFSET, self.camera)
-            self.home_button        = MoveButton(self, 'home', OFFSET1+X_OFFSET, OFFSET1+Y_OFFSET, self.camera)
+            self.up_button          = Button(self, 'up', OFFSET1+X_OFFSET, Y_OFFSET)
+            self.left_button        = Button(self, 'left', X_OFFSET, OFFSET1+Y_OFFSET)        
+            self.down_button        = Button(self, 'down', OFFSET1+X_OFFSET, OFFSET2+Y_OFFSET)    
+            self.right_button       = Button(self, 'right', OFFSET2+X_OFFSET, OFFSET1+Y_OFFSET)
+            self.top_left_button     = Button(self, 'top_left', X_OFFSET, Y_OFFSET)
+            self.top_right_button    = Button(self, 'top_right', OFFSET2+X_OFFSET, Y_OFFSET)
+            self.bottom_right_button  = Button(self, 'bottom_right', OFFSET2+X_OFFSET, OFFSET2+Y_OFFSET)
+            self.bottom_left_button   = Button(self, 'bottom_left', X_OFFSET, OFFSET2+Y_OFFSET)
+            self.home_button        = Button(self, 'home', OFFSET1+X_OFFSET, OFFSET1+Y_OFFSET)
+            self.preset_button      = ToggleButton(self, 'preset', 30, Y_OFFSET+320)
             
             self.addControl(self.up_button)
             self.addControl(self.left_button)
             self.addControl(self.down_button)
             self.addControl(self.right_button)
-            self.addControl(self.left_up_button)
-            self.addControl(self.right_up_button)
-            self.addControl(self.right_down_button)
-            self.addControl(self.left_down_button)
+            self.addControl(self.top_left_button)
+            self.addControl(self.top_right_button)
+            self.addControl(self.bottom_right_button)
+            self.addControl(self.bottom_left_button)
             self.addControl(self.home_button)
+            self.addControl(self.preset_button)
             
             self.flip_button.setNavigation      (self.down_button,      self.mirror_button,     self.close_button,      self.close_button)
             self.mirror_button.setNavigation    (self.flip_button,      self.up_button,         self.close_button,      self.close_button)
             self.settings_button.setNavigation  (self.mirror_button,    self.mirror_button,     self.right_button,      self.close_button)
             self.close_button.setNavigation     (self.mirror_button,    self.mirror_button,     self.settings_button,   self.right_button)
-            self.up_button.setNavigation        (self.mirror_button,    self.home_button,       self.left_up_button,    self.right_up_button)
-            self.left_button.setNavigation      (self.left_up_button,   self.left_down_button,  self.close_button,      self.home_button)
-            self.right_button.setNavigation     (self.right_up_button,  self.right_down_button, self.home_button,       self.settings_button)
-            self.down_button.setNavigation      (self.home_button,      self.flip_button,       self.left_down_button,  self.right_down_button)
-            self.left_up_button.setNavigation   (self.mirror_button,    self.left_button,       self.close_button,      self.up_button)
-            self.right_up_button.setNavigation  (self.mirror_button,    self.right_button,      self.up_button,         self.settings_button)
-            self.right_down_button.setNavigation(self.right_button,     self.flip_button,       self.down_button,       self.settings_button)
-            self.left_down_button.setNavigation (self.left_button,      self.flip_button,       self.close_button,      self.down_button)
+            self.up_button.setNavigation        (self.mirror_button,    self.home_button,       self.top_left_button,    self.top_right_button)
+            self.left_button.setNavigation      (self.top_left_button,   self.bottom_left_button,  self.close_button,      self.home_button)
+            self.right_button.setNavigation     (self.top_right_button,  self.bottom_right_button, self.home_button,       self.settings_button)
+            self.down_button.setNavigation      (self.home_button,      self.flip_button,       self.bottom_left_button,  self.bottom_right_button)
+            self.top_left_button.setNavigation   (self.mirror_button,    self.left_button,       self.close_button,      self.up_button)
+            self.top_right_button.setNavigation  (self.mirror_button,    self.right_button,      self.up_button,         self.settings_button)
+            self.bottom_right_button.setNavigation(self.right_button,     self.flip_button,       self.down_button,       self.settings_button)
+            self.bottom_left_button.setNavigation (self.left_button,      self.flip_button,       self.close_button,      self.down_button)
             self.home_button.setNavigation      (self.up_button,        self.down_button,       self.left_button,       self.right_button)
 
 
-        if zoom:
-            print 'Zoom enabled'
+            home_location = self.camera.ptz_home_location(3)
+            self.preset_button.setSelected(home_location)
 
+        if self.zoom:
+            self.zoom_in_button = Button(self, 'zoom_in', OFFSET2+X_OFFSET+32, Y_OFFSET)
+            self.zoom_out_button = Button(self, 'zoom_out', OFFSET2+X_OFFSET+32, OFFSET2+Y_OFFSET)
+            self.addControl(self.zoom_in_button)
+            self.addControl(self.zoom_out_button)
         
         self.setFocus(self.close_button)
 
@@ -205,28 +198,46 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
         return next(button for button in self.buttons if button == control)
     
     def onControl(self, control):
-        if control == self.close_button:
-            self.stop()
-        elif control == self.settings_button:
-            pass
-            __addon__.openSettings()
+        if control == self.close_button:        self.stop()
+        elif control == self.flip_button:       self.camera.flip_video()
+        elif control == self.mirror_button:     self.camera.mirror_video()
+        elif control == self.settings_button:   __addon__.openSettings()
+        
+        elif self.pan_tilt:
+            if control == self.home_button:     home_location = self.camera.ptz_home_location(1)
+            elif control == self.preset_button: self.toggle_preset()
+            else:
+                if control == self.up_button:     self.camera.ptz_move_up()
+                elif control == self.down_button:   self.camera.ptz_move_down()
+                elif control == self.left_button:   self.camera.ptz_move_left()
+                elif control == self.right_button:  self.camera.ptz_move_right()
+                elif control == self.top_left_button:       self.camera.ptz_move_top_left()
+                elif control == self.top_right_button:      self.camera.ptz_move_top_right()
+                elif control == self.bottom_left_button:    self.camera.ptz_move_bottom_left()
+                elif control == self.bottom_right_button:   self.camera.ptz_move_bottom_right()
+
+                self.monitor.waitForAbort(.25)  #Move Button Sensitivity
+                self.camera.ptz_stop_run()
+                
+        elif self.zoom:
+            if control == self.zoom_in_button:     self.camera.ptz_zoom_in()
+            elif control == self.zoom_out_button:   self.camera.ptz_zoom_out()
+
+            self.monitor.waitForAbort(.25)  #Move Button Sensitivity
+            self.camera.ptz_zoom_stop()
+        
+    def toggle_preset(self):
+        if self.preset_button.isSelected():
+            self.camera.ptz_add_preset()
+            notify('Home Location is now Current Location')
         else:
-            button = self.getControl(control)
-            response = button.send_cmd(control)
-
-            if not response:
-                #msg = u"{0}: {1}".format(utils.get_string(32103), response.message)
-                #utils.notify(msg)
-                pass
-
-                if isinstance(control, xbmcgui.ControlRadioButton):
-                    control.setSelected(not control.isSelected())
+            self.camera.ptz_delete_preset()
+            notify('Home Location is now Default Location')
 
     def onAction(self, action):
         if action in (ACTION_PREVIOUS_MENU, ACTION_BACKSPACE,
                       ACTION_NAV_BACK, ACTION_STOP):
             self.stop()
-
 
     def stop(self):
         self.close()
@@ -235,10 +246,6 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.stop()
-
-
-
-
 
 
 
@@ -252,16 +259,30 @@ class StopResumePlayer(xbmc.Player):
         super(StopResumePlayer, self).__init__()
         self.camera_number = kwargs ['camera_number']
         self.monitor = kwargs['monitor']
-        #self.player_window = kwargs['player_window']   #Maybe Pass the window in to close controls if player stops on its own?
+        
+        try:
+            self.callback1 = kwargs['callback1']
+        except:
+            self.callback1 = None
+            
+        try:
+            self.callback2 = kwargs['callback2']
+        except:
+            self.callback2 = None
+
 
     def onPlayBackStarted(self):
         self.monitor.set_camera_playing(self.camera_number)
+        self.callback1()        #SetupUi() - for camera controls
+        #self.seekTime(4)        #Potential hack for improving stream's perceived response to ptz movement
 
     def onPlayBackEnded(self):
         self.monitor.clear_camera_playing(self.camera_number)
+        self.callback2()        #stop() - for the preview window
 
     def onPlayBackStopped(self):
         self.monitor.clear_camera_playing(self.camera_number)
+        self.callback2()        #stop() - for the preview window
 
     def stop(self):
         self.monitor.clear_camera_playing(self.camera_number)
@@ -300,10 +321,6 @@ def playCameraVideo(camera_number, monitor):
             camera_player.start()
     else:
         print 'Settings not okay'
-
-
-
-
 
 
 if __name__ == "__main__":

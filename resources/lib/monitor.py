@@ -21,7 +21,7 @@ class AddonMonitor(xbmc.Monitor):
         xbmc.Monitor.__init__(self)
         self._stop = True
         #self._preview_window_state = [0, 0, 0, 0]
-        self._preview_dismissed_time = [0, 0, 0, 0]
+        self._preview_dismissed_time = [0, 0, 0, 0, 0]  # Dirty fix for 4th spot since Im not reducing the camera number int
         
 
     '''

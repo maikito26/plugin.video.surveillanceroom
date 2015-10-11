@@ -119,9 +119,10 @@ class Camera(object):
 
         #common.log_verbose(url)
         try:
-            response = requests.get(url, timeout=2.000) #Added timeout
+            response = requests.get(url, timeout=5.000) #Added timeout
         except (requests.RequestException) as e:
-            xbmc.log(str(e), xbmc.LOGERROR)
+            xbmc.log('Camera ' + self.camera_number + ': ' + str(e), xbmc.LOGERROR)
+            xbmc.sleep(2000) #Wait 2 seconds before next request if refused by IP Cam
             return False
         else:
             if not response:
@@ -133,7 +134,7 @@ class Camera(object):
                 xml_resp = CameraXMLResponse(response)
                 #common.log_verbose(xml_resp)
                 if not xml_resp:
-                    xbmc.log(xml_resp.message, xbmc.LOGERROR)
+                    xbmc.log('Camera ' + self.camera_number + ': ' + xml_resp.message, xbmc.LOGERROR)
                 return xml_resp
 
     def test(self):

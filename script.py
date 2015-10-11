@@ -2,15 +2,14 @@
 Script for external access
 
 xbmc.executebuiltin()
-    RunScript(plugin.video.foscam4kodi,fullscreen,0)
-    RunScript(plugin.video.foscam4kodi,preview,2)
+    RunScript(plugin.video.surveillanceroom,fullscreen,0)
+    RunScript(plugin.video.surveillanceroom,preview,2)
 
-    #xbmc.executebuiltin('RunScript(%s,%s)'%(xbmc.translatePath(('special://home/addons/{0}/cameraplayer_new.py').format(__addonid__)).decode('utf-8'), mode))
 '''   
 
 import xbmc, xbmcaddon, sys
 
-__addon__ = xbmcaddon.Addon('plugin.video.foscam4kodi')
+__addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
 
     

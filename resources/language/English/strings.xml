@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
-  <string id="32000">Foscam 4 Kodi</string>
+  <string id="32000">Surveillance Room</string>
   <string id="32001">Camera 1</string>
   <string id="32002">Camera 2</string>
   <string id="32003">Camera 3</string>
@@ -11,8 +11,8 @@
   <string id="32008">Camera</string>
   <string id="32009"></string>
   <string id="32010"></string>  
-  <string id="32011">Settings</string>
-  <string id="32012"></string> 
+  <string id="32011">Add-on Settings</string>
+  <string id="32012">Advanced Menu</string> 
   <string id="32013"></string> 
   <string id="32014"> </string> 
   <string id="32015"></string>

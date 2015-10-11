@@ -4,7 +4,7 @@
 
 import xbmc, xbmcaddon, xbmcvfs
 import threading, time, os, Queue
-from resources.lib import foscam, monitor, previewgui, settings
+from resources.lib import foscam, foscam2, monitor, previewgui, settings
 
 __addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
@@ -12,8 +12,8 @@ __path__ = xbmc.translatePath('special://profile/addon_data/%s' %__addonid__ ).d
 
 
 def alarmStateCheck(camera):
-    motion_enabled = camera[14]
-    sound_enabled = camera[15]
+    motion_enabled = camera[20]
+    sound_enabled = camera[21]
     if not motion_enabled and not sound_enabled:
         return False
     
@@ -58,17 +58,19 @@ class CameraPreviewThread(threading.Thread):
         trigger_interval = self.camera[24]
         
         print camera_number + " : Camera thread started"
-        
+
+        with foscam2.FoscamCamera(self.camera) as camera_reset:
+            camera_reset.ptz_home_location(2)
+            
         previewWindow = previewgui.CameraPreviewWindow(self.camera, monitor)
             
         while not monitor.abortRequested() and not self.stopped():
             
             script_source = monitor.opened_from_script(camera_number)
             alarmActive = False
-            #print 'Camera Number: ' + str(camera_number) + '  Script Source: ' + str(script_source) + '   Allowed and Not Open: ' + str(monitor.preview_not_open_allowed(camera_number)) + '   Open State: ' + str(monitor.preview_window_opened(camera_number))
             
             if monitor.preview_not_open_allowed(camera_number):     #Window Not Open and Allowed to be opened
-                #print 'Allowed and not open: ' + str(camera_number)
+                
                 if not script_source:
                     alarmActive = alarmStateCheck(self.camera)
                     
@@ -83,8 +85,8 @@ class CameraPreviewThread(threading.Thread):
 
                                                         
             elif monitor.preview_window_opened(camera_number):        # Window is Open
-                #print 'camera open: ' + str(camera_number)
-                if not script_source or (script_source and monitor.preview_from_script_autoclose):
+                
+                if not script_source or (script_source and monitor.preview_from_script_autoclose): 
                     
                     if not script_source:   #Doesn't Check alarm state if called by script
                         alarmActive = alarmStateCheck(self.camera)
@@ -104,15 +106,24 @@ class CameraPreviewThread(threading.Thread):
 
             # Sleep Logic - Includes logic to help detect if window is being opened by script instead of trigger
             if not alarmActive:
-                sleep = int(check_interval)                
+                sleep = int(check_interval)              
             else:
                 sleep = int(trigger_interval - 1)
 
-            x = 1    
+            x = 1
+            sleep = sleep * 2
             while not monitor.abortRequested() and not self.stopped() and x < sleep:
+
+                # Duration check so it doesn't go over.  Trues up what the user setting is.
+                window_check = monitor.preview_window_opened(camera_number)
+                if window_check and durationTime < time.time() and not alarmActive:     
+                    previewWindow.stop()    #Don't break, because we still want the interval
+
+                # If script wasn't open, and now it is so exit so it can be opened.
                 script_check = monitor.opened_from_script(camera_number)
-                if not script_source and monitor.opened_from_script(camera_number):     # If script wasn't open, and now it is so exit
+                if not script_source and monitor.opened_from_script(camera_number):     
                     break
+                
                 monitor.waitForAbort(.5)    #Smaller interval means more responsive to script opening
                 x += 1
                     
@@ -183,11 +194,11 @@ class service():
             for camera in preview_enabled_cameras:
                 
                 if camera[23] == 0:     #MJPEG
-                    print 'MJPEG thread initiatied'
+                    #print 'MJPEG thread initiatied'
                     t = threading.Thread(target = previewgui.ImageWorker, args = (monitor, q, __path__, False))
                     
                 else:                   #Snapshot
-                    print 'JPEG thread initiatied'
+                    #print 'JPEG thread initiatied'
                     t = threading.Thread(target = previewgui.ImageWorker, args = (monitor, q, __path__, True))
                     
                 t.daemon = True         #Just in case

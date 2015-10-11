@@ -1,13 +1,14 @@
 import xbmc, xbmcaddon, xbmcvfs, xbmcgui
-import threading, os, Queue, time
+import threading, os, Queue, requests#, time
 import settings
 from resources.lib import monitor, foscam
 from urllib import urlretrieve
 
 
-__addon__ = xbmcaddon.Addon('plugin.video.foscam4kodi')
+__addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
 __path__ = xbmc.translatePath(('special://profile/addon_data/{0}').format(__addonid__)).decode('utf-8')
+__black__ = xbmc.translatePath('special://home/addons/%s/resources/media/black.png' %__addonid__ ).decode('utf-8')
 
 ACTION_PREVIOUS_MENU = 10
 ACTION_STOP = 13
@@ -63,21 +64,19 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
             for active_camera in '1234':
                 i = int(active_camera) - 1
 
+                #black = xbmcgui.ControlImage(*coords[i], filename = __black__, aspectRatio = 0)
+                #self.addControl(black)
+                #black.setAnimations(animations[i])
                 
-                img1 = xbmcgui.ControlImage(*coords[i], filename=loader, aspectRatio = 0)
-                try: self.addControl(img1)
+                img1 = xbmcgui.ControlImage(*coords[i], filename = loader, aspectRatio = 0)
+                try: self.addControl(img1)  #Bug was seen here previously, hence the 'try'
                 except: pass
                 img1.setAnimations(animations[i])
                 
-                img2 = xbmcgui.ControlImage(*coords[i], filename='', aspectRatio = 0)
+                img2 = xbmcgui.ControlImage(*coords[i], filename = '', aspectRatio = 0)
                 try: self.addControl(img2)
                 except: pass
                 img2.setAnimations(animations[i])
-
-                img3 = xbmcgui.ControlImage(*coords[i], filename='', aspectRatio = 0)
-                try: self.addControl(img3)
-                except: pass
-                img3.setAnimations(animations[i])
 
                 if len(cameras) > i:
                     camera = cameras[i]
@@ -95,6 +94,7 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
                     
 
             monitor.set_camera_playing('All')
+           
             self.show()    
 
             while not monitor.abortRequested() and self.isRunning:       
@@ -104,8 +104,10 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
             
             for i in xbmcvfs.listdir(__path__)[1]:
                 if 'AllCamera_' in i:
-                    try: xbmcvfs.delete(os.path.join(__path__, i))
-                    except: pass  
+                    try:
+                        xbmcvfs.delete(os.path.join(__path__, i))
+                    except:
+                        pass  
 
     def getImages(self, i, c, path):
         '''
@@ -113,7 +115,7 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
         '''
         
         x = 0
-        starttime = time.time()
+        #starttime = time.time()
         
         while not monitor.abortRequested() and self.isRunning:
             
@@ -131,8 +133,8 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
                 xbmc.log(str(e))
                 c[1].setImage(self.error, useCache=False)
 
-        fps = (x + 1) / (time.time() - starttime)
-        print "All Cameras average FPS is " + str(fps)
+        #fps = (x + 1) / (time.time() - starttime)
+        #print "All Cameras average FPS is " + str(fps)
 
 
 
@@ -140,18 +142,23 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
         '''
         Text here
         '''
-        
-        content_length = ''
+       
+        line  = ''
         try:
-            while not 'Length' in content_length: 
-                content_length = stream.readline()
-            bytes = int(content_length.split(':')[-1])
-            content_length = stream.readline()
+            while not 'length' in line.lower():
+                line = stream.readline()
+
+            bytes = int(line.split(':')[-1])
+            
+            while len(line) > 3:
+                line = stream.readline()
+                
             return stream.read(bytes)
-        
+       
         except requests.RequestException as e:
             print str(e)
             return None
+        
     
 
     def getImagesMjpeg(self, i, c, path):
@@ -159,34 +166,43 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
         Text here
         '''
         
-        camera = foscam.Camera(c[0])
-        stream = camera.get_mjpeg_stream()
+        #camera = foscam.Camera(c[0])
+        #stream = camera.get_mjpeg_stream()
+        try:
+            stream = requests.get(c[0][8], stream=True).raw
+            #stream.readline()
+        except requests.RequestException as e:
+            print str(e)
+            c[1].setImage(self.error, useCache=False)
             
-        starttime = time.time()
+        #starttime = time.time()
         x = 0     
         while not monitor.abortRequested() and self.isRunning:
             
             frame = self.get_mjpeg_frame(stream)
             if frame:
                 filename = os.path.join(path, 'AllCamera_%d.%d.jpg') %(i, x)
-                with open(filename, 'wb') as jpeg_file:
-                    jpeg_file.write(frame)
+                try:
+                    with open(filename, 'wb') as jpeg_file:
+                        jpeg_file.write(frame)
+                except:
+                    print ' Failed to write'
                     
             if os.path.exists(filename):
-                c[1].setImage(filename, useCache=False)
-                xbmcvfs.delete(os.path.join(path, 'AllCamera_%d.%d.jpg') %(i, x - 1))
-                monitor.waitForAbort(.01)
-                c[2].setImage(filename, useCache=False)
+                if x % 2 == 0:  #Interlacing for flicker reduction/elimination
+                    c[1].setImage(filename, useCache=False)
+                else:
+                    c[2].setImage(filename, useCache=False)
+                xbmcvfs.delete(os.path.join(path, 'AllCamera_%d.%d.jpg') %(i, x - 2))
                 x += 1
                 
             else:
                 print ('Camera %s - %s' %(i, 'Error on MJPEG'))
                 c[1].setImage(self.error, useCache=False)
 
-        fps = (x + 1) / (time.time() - starttime)
-        print "Preview Camera average FPS is " + str(fps)
+        #fps = (x + 1) / (time.time() - starttime)
+        #print "Preview Camera average FPS is " + str(fps)
 
-    
 
     def onAction(self, action):        
         if action in (ACTION_PREVIOUS_MENU, ACTION_STOP, ACTION_NAV_BACK, ACTION_BACKSPACE):

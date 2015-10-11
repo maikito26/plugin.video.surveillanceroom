@@ -3,7 +3,7 @@ Text Here!
 '''
 
 import xbmc, xbmcaddon, xbmcgui, xbmcvfs
-import os   #, time
+import os, requests   #, time
 from cameraplayer import playCameraVideo
 
 __addon__ = xbmcaddon.Addon()
@@ -124,9 +124,14 @@ def frameByMjpeg(item, monitor, path):
     camera_number = camera_settings[0]
     control = item[1]
 
-    import foscam
-    camera = foscam.Camera(camera_settings)
-    stream = camera.get_mjpeg_stream()
+    #import foscam
+    #camera = foscam.Camera(c[0])
+    #stream = camera.get_mjpeg_stream()
+    try:
+        stream = requests.get(camera_settings[8], stream=True).raw
+        stream.readline()
+    except requests.RequestException as e:
+        print str(e)
         
     #starttime = time.time()
     x = 0

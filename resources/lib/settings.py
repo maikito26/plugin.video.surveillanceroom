@@ -117,7 +117,7 @@ def get_basicSettings(camera_number):
 
     snapshot = __addon__.getSetting('snapshot' + camera_number)
     rtsp = __addon__.getSetting('rtsp' + camera_number)
-    mpjeg = __addon__.getSetting('mpjpeg' + camera_number)
+    mpjeg = __addon__.getSetting('mjpeg' + camera_number)
     
     cameraplayer_source = int(__addon__.getSetting('cameraplayer_source' + camera_number))
     allcameraplayer_source = int(__addon__.getSetting('allcameraplayer_source' + camera_number))
@@ -210,7 +210,7 @@ def getSettings(settings_to_get = 'all', cameras_to_get = '1234'):
     '''
     
     global __addon__
-    __addon__ = xbmcaddon.Addon('plugin.video.foscam4kodi')
+    __addon__ = xbmcaddon.Addon()
 
     if settings_to_get == 'enabled':
         settings_level = 0
@@ -273,7 +273,7 @@ def getSettings(settings_to_get = 'all', cameras_to_get = '1234'):
                     soundsupport = False
 
                     controls = __addon__.getSetting('controls' + camera_number).lower()
-                    print 'CONTROLS!!!!???? ' + controls
+                    
                     if 'pan' in controls:
                         pan_tilt = True
 
@@ -408,10 +408,10 @@ def send_http_command(command):
 def translation(id): 
     return __addon__.getLocalizedString(id) #.encode('utf-8') 
 
-def notify(msg, time=10000):
+def notify(msg):
     __icon__  = __addon__.getAddonInfo('icon').decode("utf-8")
     addon_name = translation(32000)
-    xbmcgui.Dialog().notification(addon_name, msg, __icon__, '') #, time)
+    xbmcgui.Dialog().notification(addon_name, msg, icon = __icon__) 
 
 def invalid_char(credential, chars, stringid, show_dialog):
     for char in chars:
