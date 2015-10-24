@@ -85,7 +85,7 @@ def remove_cached_art(art):
         #Get cached image name to remove                  
         db.execute("SELECT cachedurl FROM texture WHERE url = '%s';" %art)
         data = db.fetchone()
-        log(4, 'Removing Cached Art :: SQL Output: %s' %data[0])
+        #log(4, 'Removing Cached Art :: SQL Output: %s' %data[0]) -> Causes an error on first time configuring
         
         file_to_delete = os.path.join(_tbn_path, data[0])
         log(4, 'Removing Cached Art :: File to be removed: %s' %file_to_delete)

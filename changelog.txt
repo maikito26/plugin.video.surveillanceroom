@@ -1,3 +1,8 @@
+v1.0.2 (Oct 24 2015)
+--------------------
+Fixed Issues: 
+- Removed a log line in utils.py which failed if artwork has never been cached.
+
 v1.0.1 (Oct 24 2015)
 --------------------
 Fixed Issues: 
