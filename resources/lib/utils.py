@@ -86,7 +86,7 @@ def remove_cached_art(art):
         db.execute("SELECT cachedurl FROM texture WHERE url = '%s';" %art)
         data = db.fetchone()
         
-        if data[0]:
+        try:
             
             log(4, 'Removing Cached Art :: SQL Output: %s' %data[0])
             file_to_delete = os.path.join(_tbn_path, data[0])
@@ -94,9 +94,12 @@ def remove_cached_art(art):
 
             xbmcvfs.delete(file_to_delete)
             db.execute("DELETE FROM texture WHERE url = '%s';" %art)
+
+        except:
+            pass
         
     except lite.Error, e:
-        print "Error %s:" % e.args[0]
+        log(3, "Error %s:" %e.args[0])
         #sys.exit(1)
         
     finally:

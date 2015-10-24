@@ -1,3 +1,8 @@
+v1.0.5 (Oct 24 2015)
+--------------------
+Fixed Issues: 
+- Previous fix didn't work.  Using try/except.
+
 v1.0.4 (Oct 24 2015)
 --------------------
 Fixed Issues: 
