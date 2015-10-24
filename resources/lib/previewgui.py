@@ -1,20 +1,23 @@
-'''
-Text Here!
-'''
+"""
+plugin.video.surveillanceroom
+
+A Kodi add-on by Maikito26
+
+This module is used to draw and show the preview window
+"""
 
 import xbmc, xbmcaddon, xbmcgui, xbmcvfs
 import os, requests   #, time
-from cameraplayer import playCameraVideo
+import utils, settings, cameraplayer
 
 __addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
 
-''' Common GUI images '''
-__holder__ = xbmc.translatePath('special://home/addons/%s/resources/media/holder.png' %__addonid__ ).decode('utf-8')
-__black__ = xbmc.translatePath('special://home/addons/%s/resources/media/black.png' %__addonid__ ).decode('utf-8')
-__btnimage__ = xbmc.translatePath('special://home/addons/%s/resources/media/{0}.png' %__addonid__ ).decode('utf-8')
+_black = xbmc.translatePath('special://home/addons/%s/resources/media/black.png' %__addonid__ ).decode('utf-8')
+_btnimage = xbmc.translatePath('special://home/addons/%s/resources/media/{0}.png' %__addonid__ ).decode('utf-8')
+_error = xbmc.translatePath('special://home/addons/%s/resources/media/error.png' %__addonid__ ).decode('utf-8')
+_datapath = xbmc.translatePath('special://profile/addon_data/%s' %__addonid__ ).decode('utf-8')
 
-''' Keyboard input values '''
 ACTION_PREVIOUS_MENU = 10
 ACTION_BACKSPACE = 110
 ACTION_NAV_BACK = 92
@@ -22,53 +25,44 @@ ACTION_STOP = 13
 ACTION_SELECT_ITEM = 7
 
 
-
-
-def cleanup_images(f, path):  
-    monitor.waitForAbort(1)
-    for i in xbmcvfs.listdir(path)[1]:
-        print 'CLEANUP File to delete ' + str(i) 
-        if f in i:
-            try:
-                xbmcvfs.delete(os.path.join(path, i))
-                print 'Success to delete'
-            except: pass  
-
-
-def ImageWorker(monitor, q, path, snapShot_type):
-    '''
+def ImageWorker(monitor, q):
+    """
     Thread worker that receives a window to update the image of continuously until that window is closed
-    '''
 
-    #error = os.path.join(path, 'error.png')
+    item:
+        [0] camera_number;  [1]window.control
+    """
     
     while not monitor.abortRequested() and not monitor.stopped():
         
-        try:
-            item = q.get(block = False)
+        if not q.empty():
             
-            if not snapShot_type:
-                frameByMjpeg(item, monitor, path)       #Approx 10-30fps
-            else: 
-                frameBySnapshot(item, monitor, path)    #Approx 2-4fps
-            
-            camera_number = item[0][0]
-            cleanup_images('preview_%s.' %camera_number, path)
+            try:
+                item = q.get(block = False)
+        
+                stream_type = settings.getStreamType(2, item[0])
+                url = settings.getStreamUrl(2, item[0], stream_type)
 
-        except:
-            pass
+                utils.log(2, 'Received request for image processing of Camera %s.  Stream Type: %d;  URL: %s' %(item[0], stream_type, url)) 
+                
+                if stream_type == 0:
+                    frameByMjpeg(item, monitor, url)           #Approx 10-30fps
+                elif stream_type == 1: 
+                    frameBySnapshot(item, monitor, url)        #Approx 2-4fps
+                elif stream_type == 2:
+                    frameByMjpegInterlaced(item, monitor, url) #Approx 5-15fps
+                
+                utils.remove_leftover_images('preview_%s.' %item[0])
+
+            except:
+                pass
 
         monitor.waitForAbort(0.5)
         
-
-def frameBySnapshot(item, monitor, path):
-    '''
-    Text Here
-    '''
+def frameBySnapshot(item, monitor, url):
+    """ Updates window using snapshots """
     
-    camera_settings = item[0]
-    camera_number = camera_settings[0]
-    snapshotURL = camera_settings[6]
+    camera_number = item[0]
     control = item[1]
     from urllib import urlretrieve
     
@@ -76,102 +70,106 @@ def frameBySnapshot(item, monitor, path):
     x = 0
     while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera_number):
     
-        filename = os.path.join(path, 'preview_%s.%d.jpg') %(camera_number, x)
+        filename = os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x)
 
         try:
-            urlretrieve(snapshotURL, filename)
+            urlretrieve(url, filename)
             
             if os.path.exists(filename):
                 control.img1.setImage(filename, useCache=False)
-                xbmcvfs.delete(os.path.join(path, 'preview_%s.%d.jpg') %(camera_number, x - 1))
+                xbmcvfs.delete(os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x - 1))
                 control.img2.setImage(filename, useCache=False)
                 x += 1
 
         except Exception, e:
-            print ('Camera %s - %s' %(camera_number, str(e)))
-            #control.img1.setImage(__error__, useCache=False)
+            utils.log(3, 'Camera %s - %s' %(camera_number, str(e)))
+            control.img1.setImage(_error, useCache=False)
 
-    cleanup_images('preview_%s.' %camera_number, path)
+    utils.remove_leftover_images('preview_%s.' %camera_number)
     #fps = (x + 1) / (time.time() - starttime)
     #print "Preview Camera average FPS is " + str(fps) 
 
-
-
-def get_mjpeg_frame(stream):
-    '''
-    Text Here
-    '''
+def frameByMjpeg(item, monitor, url):
+    """ Updates window using mjpeg frames """
     
-    content_length = ""
-    try:
-        while not "Length" in content_length: 
-            content_length = stream.readline()
-        bytes = int(content_length.split(':')[-1])
-        content_length = stream.readline()
-        return stream.read(bytes)
-    
-    except requests.RequestException as e:
-        print str(e)
-        return None
-    
-
-def frameByMjpeg(item, monitor, path):
-    '''
-    Text Here
-    '''
-        
-    camera_settings = item[0]
-    camera_number = camera_settings[0]
+    camera_number = item[0]
     control = item[1]
 
-    #import foscam
-    #camera = foscam.Camera(c[0])
-    #stream = camera.get_mjpeg_stream()
     try:
-        stream = requests.get(camera_settings[8], stream=True).raw
-        stream.readline()
+        stream = requests.get(url, stream=True).raw
+        
     except requests.RequestException as e:
-        print str(e)
+        utils.log(3, e)
+        control.img2.setImage(_error, useCache=False)
         
     #starttime = time.time()
     x = 0
     
     while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera_number):
-        
-        frame = get_mjpeg_frame(stream)
 
-        if frame:
-            filename = os.path.join(path, 'preview_%s.%d.jpg') %(camera_number, x)
-            with open(filename, 'wb') as jpeg_file:
-                jpeg_file.write(frame)
-                
-        if os.path.exists(filename):
+        filename = os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x)
+        filename_exists = utils.get_mjpeg_frame(stream, filename)
+        
+        if filename_exists:
             control.img1.setImage(filename, useCache=False)
-            xbmcvfs.delete(os.path.join(path, 'preview_%s.%d.jpg') %(camera_number, x - 1))
+            xbmcvfs.delete(os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x - 1))
             control.img2.setImage(filename, useCache=False)
             x += 1
             
         else:
-            print ('Camera %s - %s' %(camera_number, 'Error on MJPEG'))
-            #control.img1.setImage(__error__, useCache=False)
+            utils.log(3, 'Camera %s - Error on Mjpeg' %camera_number)
+            control.img1.setImage(_error, useCache=False)
 
-    cleanup_images('preview_%s.' %camera_number, path)
+    utils.remove_leftover_images('preview_%s.' %camera_number)
     #fps = (x + 1) / (time.time() - starttime)
     #print "Preview Camera average FPS is " + str(fps)
 
+def frameByMjpegInterlaced(item, monitor, url):
+    """ Updates window using interlaced mjpeg frames """
+    
+    camera_number = item[0]
+    control = item[1]
+    
+    try:
+        stream = requests.get(url, stream=True).raw
+        
+    except requests.RequestException as e:
+        utils.log(3, e)
+        control.img2.setImage(_error, useCache=False)
+        
+    #starttime = time.time()
+    x = 0
+    
+    while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera_number):
 
+        filename = os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x)
+        filename_exists = utils.get_mjpeg_frame(stream, filename)
 
+                
+        if filename_exists:
+            if x % 2 == 0:  #Interlacing for flicker reduction/elimination
+                control.img1.setImage(filename, useCache=False)
+            else:
+                control.img2.setImage(filename, useCache=False)
+            xbmcvfs.delete(os.path.join(_datapath, 'preview_%s.%d.jpg') %(i, x - 2))
+            x += 1
+            
+        else:
+            utils.log(3, 'Camera %s - Error on Mjpeg' %camera_number)
+            control.img2.setImage(_error, useCache=False)
+                              
+    utils.remove_leftover_images('preview_%s.' %camera_number)
+    #fps = (x + 1) / (time.time() - starttime)
+    #print "Preview Camera average FPS is " + str(fps)
 
 class Button(xbmcgui.ControlButton):
-    '''
-    Class reclasses the ControlButton class for use in this addon.
-    '''
+    """ Class reclasses the ControlButton class for use in this addon. """
     
     WIDTH = HEIGHT = 32
 
     def __new__(cls, parent, action, x, y, camera = None, scaling = 1.0):
-        focusTexture    = __btnimage__.format(action)
-        noFocusTexture  = __btnimage__.format(action+ '_nofocus')
+        focusTexture    = _btnimage.format(action)
+        noFocusTexture  = _btnimage.format(action+ '_nofocus')
         width           = int(round(cls.WIDTH * scaling))
         height          = int(round(cls.HEIGHT * scaling))
         
@@ -180,43 +178,30 @@ class Button(xbmcgui.ControlButton):
         parent.buttons.append(self)
         return self
 
-   
 class CameraPreviewWindow(xbmcgui.WindowDialog):
-    '''
-    Class is used to create the picture-in-picture window of the camera view
-    '''
+    """ Class is used to create the picture-in-picture window of the camera view """
     
     def __init__(self, camera_settings, monitor):
-        self.camera_settings = camera_settings
         self.monitor = monitor
-        self.camera_number = camera_settings[0]
-        
-        self.monitor.preview_window_reset(self.camera_number)
+        self.camera_settings = camera_settings
+        self.camera_number = self.camera_settings[0]
+        self.monitor.set_preview_window_closed(self.camera_number)
 
-       # Can be used to capture self's window id
-        #self.show()
-        #monitor.waitForAbort(.07)   
-        #self.monitor.set_preview_window_id(self.camera_number)
-        #monitor.waitForAbort(.07) 
-        #self.close()
-
-        self.snapshotURL = camera_settings[6]
-        scaling = camera_settings[19]
-        position = camera_settings[18]
-        self.setProperty('zorder', "99")
-        self._stopped = True
         self.buttons = []
         
-        '''
-        Positioning of the window
-        '''
-        
+        # Positioning of the window       
         WIDTH = 320
         HEIGHT = 180
+        
+        scaling = settings.getSetting_float('scaling', self.camera_number)
+        
         width = int(float(WIDTH * scaling))
         height = int(float(HEIGHT * scaling))
         
+        button_scaling = 0.5 * scaling
+        button_width = int(round(Button.WIDTH * button_scaling))
         
+        position = settings.getSetting('position', self.camera_number).lower()
         if 'bottom' in position:
             y = 720 - height
         else:
@@ -229,13 +214,10 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
             x = 1280 - width
             start = width
 
-        button_scaling = 0.5 * scaling
-        button_width = int(round(Button.WIDTH * button_scaling))
-
         animations = [('WindowOpen', ("effect=slide start={0:d} time=1300 tween=cubic easing=out").format(start)),
                       ('WindowClose', ("effect=slide end={0:d} time=900 tween=back easing=inout").format(start))]
 
-        self.black = xbmcgui.ControlImage(x, y, width, height, __black__)
+        self.black = xbmcgui.ControlImage(x, y, width, height, _black)
         self.addControl(self.black)
         self.black.setAnimations(animations)
         
@@ -250,45 +232,37 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         self.addControl(self.close_button)
         self.close_button.setAnimations(animations)                    
            
-
+        self.setProperty('zorder', "99")
+         
     def start(self):
-        self.monitor.preview_window_open(self.camera_number)
-        #self.monitor.waitForAbort(.2)
+        self.monitor.set_preview_window_opened(self.camera_number)
         self.show()
 
     def stop(self):
-        self.monitor.preview_window_reset(self.camera_number)
+        self.monitor.set_preview_window_closed(self.camera_number)
         self.monitor.waitForAbort(.2)
         self.close()
 
     def onControl(self, control):
         if control == self.close_button:
-            self.monitor.set_dismissed_preview(self.camera_number)
+            self.monitor.set_preview_window_dismissed(self.camera_number)
+            utils.log(4, 'Camera %s:  Action: Stop Button Pressed' %self.camera_number)
             self.stop()
             
     def onAction(self, action):
         if action in (ACTION_PREVIOUS_MENU, ACTION_BACKSPACE, ACTION_NAV_BACK):
-            self.monitor.set_dismissed_preview(self.camera_number)
+            self.monitor.set_preview_window_dismissed(self.camera_number)
+            utils.log(4, 'Camera %s:  KeyPress: ' %action)
             self.stop()
+            
         elif action == ACTION_SELECT_ITEM:
             self.run()
             
     def run(self):
         self.stop()
-        playCameraVideo(self.camera_number, self.monitor)
-        #xbmc.executebuiltin("RunAddon({0})".format(utils.addon_info('id')))
+        cameraplayer.play(self.camera_number, self.monitor)
+
         
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     pass
 

@@ -1,3 +1,31 @@
+v1.0.0 (Oct 24 2015) - Official Release
+---------------------------------------
+Fixed Issues: 
+- Camera controls don't display on generic IP cameras
+- Code cleaned up, performance improvements and documented code
+- Image cleanup doesn't remove fanart
+- Improved generic IP camera support
+
+New Features:
+- New settings menu overhaul with added features
+- Extended Menu with advanced features
+- Foscam Camera Settings window added to configure the Foscam Camera
+- Icons by camera type
+- Fanart updates using snapshot image from camera
+- New interlaced mjpeg mode can reduce flicker on slower computers
+- IR LED controls
+- Notifications showing add-on information added.  This can be turned off in settings.
+- Configure preview behavior, separated by service and manually requested
+
+Known Issues:
+- *HIGH PRIORITY* When using MJPEG for all player or preview, its possible there might be a lag that grows overtime depending on network speed and computer speed.  Work Around: Use snapshots
+- *MEDIUM PRIORITY* Zoom buttons are not included in remote/keyboard navigation scheme yet.  Work around: Use the mouse
+- *MEDIUM PRIORITY* Screensaver will come on during All Camera player when its playing 
+- *LOW PRIORITY* Trigger interval is allowed to be 0 in the code which causes a camera thread to hang. This is a bug from the camera itself which I discovered so I'm not sure if I should put a check into it. Camera value should be 5-15 but somehow my one camera became 0-10 which is not correct. I will try to reset it to factory to see if this resolves it.
+- *LOW PRIORITY* Z-Order of windows isn't optimized if calling from the script for multiple player types.  Not a likely scenario but some 'error' logic can be added to prevent any potential issues
+- *LOW PRIORITY* If multiple preview windows are opened, you can only close the window by mouse which was opened last.
+
+
 v0.2.0 (Oct 7 2015)
 -------------------
 Fixed Issues: 

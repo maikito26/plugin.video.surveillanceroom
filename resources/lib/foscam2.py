@@ -1,10 +1,15 @@
 """
-A module to exploit Foscam Foscam FI9821W/P/HD816W/P camera.
+plugin.video.surveillanceroom
+
+A Kodi add-on by Maikito26
+
+This module is to exploit Foscam HD Cameras, ie FI9821W/P/HD816W/P.
 """
 
 import urllib
 import xml.etree.ElementTree as ET
 from threading import Thread
+import utils
 
 # Foscam error code.
 FOSCAM_SUCCESS           = 0
@@ -56,7 +61,7 @@ class FoscamCamera(object):
     @property
     def mjpeg_url(self):
 	_mjpegUrl = "http://{0}/cgi-bin/CGIStream.cgi?cmd={{cmd}}&usr={1}&pwd={2}&".format(self.url, self.usr, self.pwd)
-        return _streamUrl.format(cmd = 'GetMJStream')   #MJPEG stream is VGA resolution @ 15fps
+        return _mjpegUrl.format(cmd = 'GetMJStream')   #MJPEG stream is VGA resolution @ 15fps
 
     @property
     def snapshot_url(self):
@@ -88,14 +93,14 @@ class FoscamCamera(object):
 
         # Parse parameters from response string.
         if self.verbose:
-            print 'Send Foscam command: %s' % cmdurl
+            utils.log(4, 'Send Foscam command: %s' % cmdurl)
         try:
             raw_string = ''
             raw_string = urllib.urlopen(cmdurl).read()
             root = ET.fromstring(raw_string)
         except:
             if self.verbose:
-                print 'Foscam exception: ' + raw_string
+                utils.log(3, 'Foscam exception: ' + raw_string)
             return ERROR_FOSCAM_UNAVAILABLE, None
         code = ERROR_FOSCAM_UNKNOWN
         params = dict()
@@ -107,7 +112,7 @@ class FoscamCamera(object):
                 params[child.tag] = child.text
 
         if self.verbose:
-            print 'Received Foscam response: %s, %s' % (code, params)
+            utils.log(4, 'Received Foscam response: %s, %s' % (code, params))
         return code, params
 
     def execute_command(self, cmd, params=None, callback=None):
@@ -128,26 +133,17 @@ class FoscamCamera(object):
         else:
             return execute_with_callbacks(cmd, params, callback)
 
-			
-    def test(self):
-        response = self.get_dev_state()
-        if response:
-            msg = response.message
-        else:
-            msg = "Error connecting to Camera " + self.camera_number
-        return bool(response), msg
-
     def set_ir_on(self, callback=None):
 	'''
         Turn on the IR LED
         '''
-	self.execute_command('openInfraLed', callback=callback)
+	return self.execute_command('openInfraLed', callback=callback)
 
     def set_ir_off(self, callback=None):
 	'''
         Turn off the IR LED
         '''
-	self.execute_command('closeInfraLed', callback=callback)
+	return self.execute_command('closeInfraLed', callback=callback)
 
     def get_ir_config(self, callback=None):
 	'''
@@ -155,7 +151,8 @@ class FoscamCamera(object):
             mode:  0  Auto
                    1  Manual
         '''
-	self.execute_command('getInfraLedConfig', callback=callback)
+	return self.execute_command('getInfraLedConfig', callback=callback)
+
 
     def set_ir_config(self, mode, callback=None):
 	'''
@@ -164,7 +161,7 @@ class FoscamCamera(object):
                    1  Manual
         '''
 	params = {'mode': mode}
-	self.execute_command('setInfraLedConfig', params, callback=callback)
+	return self.execute_command('setInfraLedConfig', params, callback=callback)
 
 		
     # *************** AV Settings  ******************
@@ -197,12 +194,18 @@ class FoscamCamera(object):
                             2 Upload to FTP
         '''
 	self.execute_command('getSnapConfig', callback=callback)
-	
+
     def enable_mjpeg(self):
         '''
         Set the sub stream type to Motion jpeg.
         '''
-        self.set_sub_video_stream_type(1)	
+        self.set_sub_video_stream_type(1)
+
+    def disable_mjpeg(self):
+        '''
+        Set the sub stream type to Motion jpeg.
+        '''
+        self.set_sub_video_stream_type(0)
 		
 		
     def get_sub_video_stream_type(self, callback=None):
@@ -492,26 +495,32 @@ class FoscamCamera(object):
     def ptz_home_location(self, mode, callback=None):
         '''
         Reset PT to home position.
-            mode:  0 Reset to camera default location
-                   1 Return if add-on default preset point exists or not, and go to point if it does or camera default if it doesn't
-                   2 Go to add-on default preset if it exists and no action if it doesn't
-                   3 Return if add-on default preset point exists or not
+            mode:  0 Return if add-on default preset point exists or not
+                   1 Go to add-on default preset if it exists and no action if it doesn't
+                   2 Return if add-on default preset point exists or not, and go to point if it does or camera default if it doesn't
+                   3 Reset to camera default location                   
         '''
-        if mode > 0:
-            response_ok, response = self.ptz_get_preset()
+
+        if mode < 3:
+            response_code, response = self.ptz_get_preset()
             try:
                 qty = int(response.get('cnt'))
                 for x in range(4, qty):
                     point = response.get('point%d' %x)
                     if 'surveillanceroom_default' in point:
-                        if mode < 3:
-                            self.ptz_goto_preset('surveillanceroom_default')
-                        return True
+                        if mode == 0:
+                            return True
+                        else:
+                            return True, self.ptz_goto_preset('surveillanceroom_default')
+
             except:
                 pass
-            if mode == 1:
+
+            if mode == 2:
                 self.ptz_reset()
             return False
+            
+        return self.ptz_reset()
                     
     def ptz_get_preset(self, callback=None):
         '''
@@ -621,13 +630,37 @@ class FoscamCamera(object):
         params = {'speed': speed}
         return self.execute_command('setZoomSpeed', params, callback=callback)
 
+
     
     # *************** Alarm Function *******************
+
+    def is_alarm_active(self, motion_enabled, sound_enabled):
+        '''
+        Returns the state of the alarm on the camera.
+        '''
+        alarmActive = False
+        success_code, response = self.get_dev_state()
+        
+        if success_code == 0:
+            
+            for alarm, enabled in (('motionDetect', motion_enabled), ('sound', sound_enabled)):
+                
+                if enabled:
+                    param = "{0}Alarm".format(alarm)
+                    
+                    if response[param] == '2':
+                        alarmActive = True
+                        break
+                    
+            return success_code, alarmActive, alarm
+        
+        return success_code, False, None
+
     def get_sound_detect_config(self, callback=None):
 	'''
         Get sound detect config
         '''
-	self.execute_command('getAudioAlarmConfig', callback=callback)
+	return self.execute_command('getAudioAlarmConfig', callback=callback)
 		
     def set_sound_detect_config(self, params, callback=None):
         '''
@@ -645,15 +678,47 @@ class FoscamCamera(object):
 
     def enable_sound_detection(self):
         '''
-        Enable motion detection
+        Enable sound detection
         '''
-        self.set_motion_detection(1)
+        self.set_sound_detection(1)
 
     def disable_sound_detection(self):
         '''
-        disable motion detection
+        disable sound detection
         '''
-        self.set_motion_detection(0)
+        self.set_sound_detection(0)
+
+    def get_sound_sensitivity(self):
+        '''
+        Get the current config and set the sound detection on or off
+        '''
+        result, current_config = self.get_sound_detect_config()
+        return current_config['sensitivity']
+    
+    def set_sound_sensitivity(self, sensitivity):
+        '''
+        Get the current config and set the sound detection on or off
+        '''
+        result, current_config = self.get_sound_detect_config()
+        current_config['sensitivity'] = sensitivity
+        self.set_sound_detect_config(current_config)
+
+    def get_sound_triggerinterval(self):
+        '''
+        Get the current config and set the sound detection on or off
+        '''
+        result, current_config = self.get_sound_detect_config()
+        return current_config['triggerInterval']
+    
+    def set_sound_triggerinterval(self, triggerInterval):
+        '''
+        Get the current config and set the sound detection on or off
+        '''
+        result, current_config = self.get_sound_detect_config()
+        current_config['triggerInterval'] = triggerInterval
+        self.set_sound_detect_config(current_config)
+
+        
 	
 	
     def get_motion_detect_config(self, callback=None):
@@ -687,5 +752,37 @@ class FoscamCamera(object):
         disable motion detection
         '''
         self.set_motion_detection(0)
+
+    def get_motion_sensitivity(self):
+        '''
+        Get the current config and set the motion detection on or off
+        '''
+        result, current_config = self.get_motion_detect_config()
+        return current_config['sensitivity']
+    
+    def set_motion_sensitivity(self, sensitivity):
+        '''
+        Get the current config and set the motion detection on or off
+        '''
+        result, current_config = self.get_motion_detect_config()
+        current_config['sensitivity'] = sensitivity
+        self.set_motion_detect_config(current_config)
+
+    def get_motion_triggerinterval(self):
+        '''
+        Get the current config and set the motion detection on or off
+        '''
+        result, current_config = self.get_motion_detect_config()
+        return current_config['triggerInterval']
+    
+    def set_motion_triggerinterval(self, triggerInterval):
+        '''
+        Get the current config and set the motion detection on or off
+        '''
+        result, current_config = self.get_motion_detect_config()
+        current_config['triggerInterval'] = triggerInterval
+        self.set_motion_detect_config(current_config)
+
+    
 
    

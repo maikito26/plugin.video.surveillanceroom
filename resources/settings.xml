@@ -1,183 +1,172 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 
-	<category label="32001">
-		<setting label="32030" type="bool" id="camera1" default="false" />
-		<setting label="32023" type="lsep" enable="eq(-1,true)" />
-			<setting label="32031" type="labelenum" id="cameratype1" lvalues="32020|32021|32022" default="0" enable="eq(-2,true)" />
-				<setting label="32032" type="text" id="host1" visible="!eq(-1,2)" enable="eq(-3,true)" />
-				<setting label="32033" type="number" id="port1" default="88" visible="!eq(-2,2)" enable="eq(-4,true)" />
-				<setting label="32034" type="text" id="username1" default="admin"  visible="!eq(-3,2)" enable="eq(-5,true)" />
-				<setting label="32035" type="text" id="password1" option="hidden" visible="!eq(-4,2)" enable="eq(-6,true)" />
-				<setting label="32026" type="text" id="name1" enable="eq(-7,true)" />
-			<setting type="sep" enable="eq(-8,true)" />
-				<setting label="32039" type="enum" id="cameraplayer_source1" lvalues="32027|32028|32025" default="0" enable="eq(-9,true)" />
-				<setting label="32040" type="enum" id="allcameraplayer_source1" lvalues="32027|32029" default="0" enable="eq(-10,true)" />
-				<setting label="32038" type="text" id="mjpeg1" visible="!eq(-9,0)" enable="eq(-11,true)" />
-				<setting label="32037" type="text" id="rtsp1" visible="!eq(-10,0)" enable="eq(-12,true)" />
-				<setting label="32036" type="text" id="snapshot1" visible="!eq(-11,0)" enable="eq(-13,true)" />
-			
-		<setting label="32041" type="lsep" visible="lt(-12,2)" enable="eq(-14,true)" />
-			<setting label="32042" type="labelenum" id="controls1" lvalues="32043|32044|32045" default="0" visible="lt(-13,2)" enable="eq(-15,true)" />
-			<setting label="32046" type="labelenum" id="alarmtype1" lvalues="32047|32048" default="0" visible="lt(-14,2)" enable="eq(-16,true)" />
-			
-		<setting label="32051" type="lsep" enable="eq(-17,true)" />
-			<setting label="32052" type="bool" id="preview_enabled1" default="false" enable="eq(-18,true)" />
-			<setting label="32053" type="slider" id="duration1" default="12" range="1,1,30" option="int" subsetting="true" visible="eq(-1,true)" enable="eq(-19,true)" />
-			<setting label="32054" type="labelenum" id="location1" lvalues="32055|32056|32057|32058" subsetting="true" visible="eq(-2,true)" enable="eq(-20,true)" />
-			<setting label="32060" type="slider" id="scaling1" default="0.8" range="0.5,0.1,3.0" subsetting="true" visible="eq(-3,true)" enable="eq(-21,true)" />
-			<setting label="32061" type="bool" id="motion_trigger1" default="false" subsetting="true" visible="eq(-4,true)+lt(-20,2)" enable="eq(-22,true)" />
-			<setting label="32062" type="bool" id="sound_trigger1" default="false" subsetting="true" visible="eq(-5,true)+lt(-21,2)" enable="eq(-7,1)+eq(-23,true)" />
-			<setting label="32063" type="slider" id="check_interval1" default="4" range="1,1,15" option="int" subsetting="true" visible="eq(-6,true)+lt(-22,2)" enable="eq(-24,true)" />
-			<setting label="32066" type="enum" id="preview_source1" lvalues="32027|32029" default="0" subsetting="true" visible="eq(-7,true)" enable="eq(-25,true)" />
-		
-		<setting label="32071" type="lsep" visible="eq(-8,true)+lt(-24,2)" enable="eq(-26,true)"  />
-		<setting label="32072" type="bool" id="update_camera_settings1" default="false" visible="eq(-9,true)+lt(-25,2)" enable="eq(-27,true)" />
-			<setting label="32073" type="enum" id="motion_sensitivity1" lvalues="32077|32078|32079|32080|32081" default="1" visible="eq(-10,true)+lt(-26,2)" enable="eq(-1,true)+eq(-28,true)"/>
-			<setting label="32074" type="slider" id="motion_trigger_interval1" default="15" range="5,1,15" option="int" visible="eq(-11,true)+lt(-27,2)" enable="eq(-2,true)+eq(-29,true)" />
-			<setting label="32075" type="enum" id="sound_sensitivity1" lvalues="32077|32078|32079|32080|32081" default="1" visible="eq(-12,true)+lt(-28,2)" enable="eq(-3,true)+eq(-30,true)+eq(-7,true)+eq(-14,1)" />
-			<setting label="32076" type="slider" id="sound_trigger_interval1" default="15" range="5,1,15" option="int" visible="eq(-13,true)+lt(-29,2)" enable="eq(-4,true)+eq(-31,true)+eq(-8,true)+eq(-15,1)" />	
-	</category>
-	
-	
-	<category label="32002">
-		<setting label="32030" type="bool" id="camera2" default="false" />
-		<setting label="32023" type="lsep" enable="eq(-1,true)" />
-			<setting label="32031" type="labelenum" id="cameratype2" lvalues="32020|32021|32022" default="0" enable="eq(-2,true)" />
-				<setting label="32032" type="text" id="host2" visible="!eq(-1,2)" enable="eq(-3,true)" />
-				<setting label="32033" type="number" id="port2" default="88" visible="!eq(-2,2)" enable="eq(-4,true)" />
-				<setting label="32034" type="text" id="username2" default="admin"  visible="!eq(-3,2)" enable="eq(-5,true)" />
-				<setting label="32035" type="text" id="password2" option="hidden" visible="!eq(-4,2)" enable="eq(-6,true)" />
-				<setting label="32026" type="text" id="name2" enable="eq(-7,true)" />
-			<setting type="sep" enable="eq(-8,true)" />
-				<setting label="32039" type="enum" id="cameraplayer_source2" lvalues="32027|32028|32025" default="0" enable="eq(-9,true)" />
-				<setting label="32040" type="enum" id="allcameraplayer_source2" lvalues="32027|32029" default="0" enable="eq(-10,true)" />
-				<setting label="32038" type="text" id="mjpeg2" visible="!eq(-9,0)" enable="eq(-11,true)" />
-				<setting label="32037" type="text" id="rtsp2" visible="!eq(-10,0)" enable="eq(-12,true)" />
-				<setting label="32036" type="text" id="snapshot2" visible="!eq(-11,0)" enable="eq(-13,true)" />
-			
-		<setting label="32041" type="lsep" visible="lt(-12,2)" enable="eq(-14,true)" />
-			<setting label="32042" type="labelenum" id="controls2" lvalues="32043|32044|32045" default="0" visible="lt(-13,2)" enable="eq(-15,true)" />
-			<setting label="32046" type="labelenum" id="alarmtype2" lvalues="32047|32048" default="0" visible="lt(-14,2)" enable="eq(-16,true)" />
-			
-		<setting label="32051" type="lsep" enable="eq(-17,true)" />
-			<setting label="32052" type="bool" id="preview_enabled2" default="false" enable="eq(-18,true)" />
-			<setting label="32053" type="slider" id="duration2" default="12" range="1,1,30" option="int" subsetting="true" visible="eq(-1,true)" enable="eq(-19,true)" />
-			<setting label="32054" type="labelenum" id="location2" lvalues="32056|32057|32058|32055" subsetting="true" visible="eq(-2,true)" enable="eq(-20,true)" />
-			<setting label="32060" type="slider" id="scaling2" default="0.8" range="0.5,0.1,3.0" subsetting="true" visible="eq(-3,true)" enable="eq(-21,true)" />
-			<setting label="32061" type="bool" id="motion_trigger2" default="false" subsetting="true" visible="eq(-4,true)+lt(-20,2)" enable="eq(-22,true)" />
-			<setting label="32062" type="bool" id="sound_trigger2" default="false" subsetting="true" visible="eq(-5,true)+lt(-21,2)" enable="eq(-7,1)+eq(-23,true)" />
-			<setting label="32063" type="slider" id="check_interval2" default="4" range="1,1,15" option="int" subsetting="true" visible="eq(-6,true)+lt(-22,2)" enable="eq(-24,true)" />
-			<setting label="32066" type="enum" id="preview_source2" lvalues="32027|32029" default="0" subsetting="true" visible="eq(-7,true)" enable="eq(-25,true)" />
-		
-		<setting label="32071" type="lsep" visible="eq(-8,true)+lt(-24,2)" enable="eq(-26,true)"  />
-		<setting label="32072" type="bool" id="update_camera_settings2" default="false" visible="eq(-9,true)+lt(-25,2)" enable="eq(-27,true)" />
-			<setting label="32073" type="enum" id="motion_sensitivity2" lvalues="32077|32078|32079|32080|32081" default="1" visible="eq(-10,true)+lt(-26,2)" enable="eq(-1,true)+eq(-28,true)"/>
-			<setting label="32074" type="slider" id="motion_trigger_interval2" default="15" range="5,1,15" option="int" visible="eq(-11,true)+lt(-27,2)" enable="eq(-2,true)+eq(-29,true)" />
-			<setting label="32075" type="enum" id="sound_sensitivity2" lvalues="32077|32078|32079|32080|32081" default="1" visible="eq(-12,true)+lt(-28,2)" enable="eq(-3,true)+eq(-30,true)+eq(-7,true)+eq(-14,1)" />
-			<setting label="32076" type="slider" id="sound_trigger_interval2" default="15" range="5,1,15" option="int" visible="eq(-13,true)+lt(-29,2)" enable="eq(-4,true)+eq(-31,true)+eq(-8,true)+eq(-15,1)" />	
+	<category label ="32018">
+		<setting label="32009" id="enabled1" type="bool" default="false" />
+		<setting label="32017" id="enabled_preview1" type="bool" default="true" enable="eq(-1,true)" subsetting="true" />
+		<setting label="32010" id="enabled2" type="bool" default="false" />
+		<setting label="32017" id="enabled_preview2" type="bool" default="true" enable="eq(-1,true)" subsetting="true" />
+		<setting label="32011" id="enabled3" type="bool" default="false" />
+		<setting label="32017" id="enabled_preview3" type="bool" default="true" enable="eq(-1,true)" subsetting="true" />
+		<setting label="32012" id="enabled4" type="bool" default="false" />
+		<setting label="32017" id="enabled_preview4" type="bool" default="true" enable="eq(-1,true)" subsetting="true" />
 	</category>
 
+
+	<category label="32019">
+		<setting label="32020" id="fanart" type="enum" lvalues="32030|32031" default="0" />
+		<setting label="32024" id="notifications" type="bool" default="true" />
+		<setting label="32021" id="resume_time" type="slider" default="10" range="0,1,20" option="int" />
+		<setting label="32025" id="hack1" type="bool" default="false" />
+		<setting label="32023" id="log_level" type="enum" lvalues="32032|32033|32034|32039" default="0" />
+	</category>
+		
+		
+	<category label="32037">
+		<setting label="32040" id="dismissed_behavior" type="enum" lvalues="32045|32046" default="1" />
+		<setting label="32041" id="dismissed_duration" type="slider" default="15" range="0,1,60" option="int" />
+
+		<setting label="32111" type="lsep" />
+		<setting label="32112" id="w_setting" type="bool" default="true" subsetting="true" />
+		<setting label="32113" id="w_context" type="bool" default="true" subsetting="true" />
+		<setting label="32114" id="w_home" type="bool" default="false" subsetting="true" />
+		<setting label="32115" id="w_library" type="bool" default="false" subsetting="true" />
+		<setting label="32116" id="w_sysinfo" type="bool" default="false" subsetting="true" />
+		<setting label="32117" id="w_keyboard" type="bool" default="true" subsetting="true" />
+		<setting label="32118" id="w_controls" type="bool" default="true" subsetting="true" />
+		<setting label="32119" id="w_windowid" type="text" />
+	</category>
+
+
+	<category label="32001">
+		<setting label="32050" id="name1" type="text" />
+		<setting label="32051" id="type1" type="enum" lvalues="32065|32066|32067|32068" default="0" />
+			<setting label="32052" id="host1" type="text" enable="!eq(-1,3)" />
+			<setting label="32053" id="port1" type="number" default="88" enable="!eq(-2,3)" />
+			<setting label="32054" id="user1" type="text" default="admin" enable="!eq(-3,3)" />
+			<setting label="32055" id="pass1" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32056" id="stream1" type="enum" lvalues="32071|32072" default="0" />
+			<setting label="32057" id="allstream1" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32058" id="preview_stream1" type="enum" lvalues="32072|32073|32074" default="0" />
+			<setting label="32059" id="snapshot_url1" type="text" visible="!eq(-8,0)+!eq(-8,2)" subsetting="true" />
+			<setting label="32060" id="stream_url1" type="text" visible="!eq(-9,0)+!eq(-9,2)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url1" type="text" visible="!eq(-10,0)+!eq(-10,2)" subsetting="true" />
+			
+		<setting label="32080" type="lsep" />
+			<setting label="32081" id="ptz1" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
+			<setting label="32022" id="ptz_sensitivity1" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" subsetting="true" />
+			<setting label="32082" id="conn1" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-14,3)+!eq(-2,0)" subsetting="true" />
+			<setting label="32083" id="alarm1" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-15,3)" />
+			
+		<setting label="32090" type="lsep" />
+			<setting label="32091" id="motion1" type="bool" default="false" enable="gt(-2,0)" />
+			<setting label="32092" id="sound1" type="bool" default="false" enable="eq(-3,2)" />
+			<setting label="32093" id="interval1" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
+			<setting label="32094" id="position1" type="labelenum" lvalues="32100|32101|32102|32103" />
+			<setting label="32095" id="scaling1" type="slider" default="0.8" range="0.5,0.1,3.0" />
+			<setting label="32096" id="dur_service1" type="slider" default="12" range="1,1,30" option="int" />
+			<setting label="32097" id="dur_script1" type="slider" default="12" range="1,1,30" option="int" />
+			<setting label="32098" id="p_service1" type="enum" lvalues="32104|32038|32031|32105" default="0" />
+			<setting label="32099" id="p_script1" type="enum" lvalues="32104|32038|32031" default="0" />
+	</category>
+	
+	<category label="32002">
+		<setting label="32050" id="name2" type="text" />
+		<setting label="32051" id="type2" type="enum" lvalues="32065|32066|32067|32068" default="0" />
+			<setting label="32052" id="host2" type="text" enable="!eq(-1,3)" />
+			<setting label="32053" id="port2" type="number" default="88" enable="!eq(-2,3)" />
+			<setting label="32054" id="user2" type="text" default="admin" enable="!eq(-3,3)" />
+			<setting label="32055" id="pass2" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32056" id="stream2" type="enum" lvalues="32071|32072" default="0" />
+			<setting label="32057" id="allstream2" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32058" id="preview_stream2" type="enum" lvalues="32072|32073|32074" default="0" />
+			<setting label="32059" id="snapshot_url2" type="text" visible="!eq(-8,0)+!eq(-8,2)" subsetting="true" />
+			<setting label="32060" id="stream_url2" type="text" visible="!eq(-9,0)+!eq(-9,2)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url2" type="text" visible="!eq(-10,0)+!eq(-10,2)" subsetting="true" />
+			
+		<setting label="32080" type="lsep" />
+			<setting label="32081" id="ptz2" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
+			<setting label="32022" id="ptz_sensitivity2" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" subsetting="true" />
+			<setting label="32082" id="conn2" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-14,3)+!eq(-2,0)" subsetting="true" />
+			<setting label="32083" id="alarm2" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-15,3)" />
+			
+		<setting label="32090" type="lsep" />
+			<setting label="32091" id="motion2" type="bool" default="false" enable="gt(-2,0)" />
+			<setting label="32092" id="sound2" type="bool" default="false" enable="eq(-3,2)" />
+			<setting label="32093" id="interval2" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
+			<setting label="32094" id="position2" type="labelenum" lvalues="32101|32102|32103|32100" />
+			<setting label="32095" id="scaling2" type="slider" default="0.8" range="0.5,0.1,3.0" />
+			<setting label="32096" id="dur_service2" type="slider" default="12" range="1,1,30" option="int" />
+			<setting label="32097" id="dur_script2" type="slider" default="12" range="1,1,30" option="int" />
+			<setting label="32098" id="p_service2" type="enum" lvalues="32104|32038|32031|32105" default="0" />
+			<setting label="32099" id="p_script2" type="enum" lvalues="32104|32038|32031" default="0" />
+	</category>
 	
 	<category label="32003">
-		<setting label="32030" type="bool" id="camera3" default="false" />
-		<setting label="32023" type="lsep" enable="eq(-1,true)" />
-			<setting label="32031" type="labelenum" id="cameratype3" lvalues="32020|32021|32022" default="0" enable="eq(-2,true)" />
-				<setting label="32032" type="text" id="host3" visible="!eq(-1,2)" enable="eq(-3,true)" />
-				<setting label="32033" type="number" id="port3" default="88" visible="!eq(-2,2)" enable="eq(-4,true)" />
-				<setting label="32034" type="text" id="username3" default="admin"  visible="!eq(-3,2)" enable="eq(-5,true)" />
-				<setting label="32035" type="text" id="password3" option="hidden" visible="!eq(-4,2)" enable="eq(-6,true)" />
-				<setting label="32026" type="text" id="name3" enable="eq(-7,true)" />
-			<setting type="sep" enable="eq(-8,true)" />
-				<setting label="32039" type="enum" id="cameraplayer_source3" lvalues="32027|32028|32025" default="0" enable="eq(-9,true)" />
-				<setting label="32040" type="enum" id="allcameraplayer_source3" lvalues="32027|32029" default="0" enable="eq(-10,true)" />
-				<setting label="32038" type="text" id="mjpeg3" visible="!eq(-9,0)" enable="eq(-11,true)" />
-				<setting label="32037" type="text" id="rtsp3" visible="!eq(-10,0)" enable="eq(-12,true)" />
-				<setting label="32036" type="text" id="snapshot3" visible="!eq(-11,0)" enable="eq(-13,true)" />
+		<setting label="32050" id="name3" type="text" />
+		<setting label="32051" id="type3" type="enum" lvalues="32065|32066|32067|32068" default="0" />
+			<setting label="32052" id="host3" type="text" enable="!eq(-1,3)" />
+			<setting label="32053" id="port3" type="number" default="88" enable="!eq(-2,3)" />
+			<setting label="32054" id="user3" type="text" default="admin" enable="!eq(-3,3)" />
+			<setting label="32055" id="pass3" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32056" id="stream3" type="enum" lvalues="32071|32072" default="0" />
+			<setting label="32057" id="allstream3" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32058" id="preview_stream3" type="enum" lvalues="32072|32073|32074" default="0" />
+			<setting label="32059" id="snapshot_url3" type="text" visible="!eq(-8,0)+!eq(-8,2)" subsetting="true" />
+			<setting label="32060" id="stream_url3" type="text" visible="!eq(-9,0)+!eq(-9,2)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url3" type="text" visible="!eq(-10,0)+!eq(-10,2)" subsetting="true" />
 			
-		<setting label="32041" type="lsep" visible="lt(-12,2)" enable="eq(-14,true)" />
-			<setting label="32042" type="labelenum" id="controls3" lvalues="32043|32044|32045" default="0" visible="lt(-13,2)" enable="eq(-15,true)" />
-			<setting label="32046" type="labelenum" id="alarmtype3" lvalues="32047|32048" default="0" visible="lt(-14,2)" enable="eq(-16,true)" />
+		<setting label="32080" type="lsep" />
+			<setting label="32081" id="ptz3" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
+			<setting label="32022" id="ptz_sensitivity3" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" subsetting="true" />
+			<setting label="32082" id="conn3" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-14,3)+!eq(-2,0)" subsetting="true" />
+			<setting label="32083" id="alarm3" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-15,3)" />
 			
-		<setting label="32051" type="lsep" enable="eq(-17,true)" />
-			<setting label="32052" type="bool" id="preview_enabled3" default="false" enable="eq(-18,true)" />
-			<setting label="32053" type="slider" id="duration3" default="12" range="1,1,30" option="int" subsetting="true" visible="eq(-1,true)" enable="eq(-19,true)" />
-			<setting label="32054" type="labelenum" id="location3" lvalues="32057|32058|32055|32056" subsetting="true" visible="eq(-2,true)" enable="eq(-20,true)" />
-			<setting label="32060" type="slider" id="scaling3" default="0.8" range="0.5,0.1,3.0" subsetting="true" visible="eq(-3,true)" enable="eq(-21,true)" />
-			<setting label="32061" type="bool" id="motion_trigger3" default="false" subsetting="true" visible="eq(-4,true)+lt(-20,2)" enable="eq(-22,true)" />
-			<setting label="32062" type="bool" id="sound_trigger3" default="false" subsetting="true" visible="eq(-5,true)+lt(-21,2)" enable="eq(-7,1)+eq(-23,true)" />
-			<setting label="32063" type="slider" id="check_interval3" default="4" range="1,1,15" option="int" subsetting="true" visible="eq(-6,true)+lt(-22,2)" enable="eq(-24,true)" />
-			<setting label="32066" type="enum" id="preview_source3" lvalues="32027|32029" default="0" subsetting="true" visible="eq(-7,true)" enable="eq(-25,true)" />
-		
-		<setting label="32071" type="lsep" visible="eq(-8,true)+lt(-24,2)" enable="eq(-26,true)"  />
-		<setting label="32072" type="bool" id="update_camera_settings3" default="false" visible="eq(-9,true)+lt(-25,2)" enable="eq(-27,true)" />
-			<setting label="32073" type="enum" id="motion_sensitivity3" lvalues="32077|32078|32079|32080|32081" default="1" visible="eq(-10,true)+lt(-26,2)" enable="eq(-1,true)+eq(-28,true)"/>
-			<setting label="32074" type="slider" id="motion_trigger_interval3" default="15" range="5,1,15" option="int" visible="eq(-11,true)+lt(-27,2)" enable="eq(-2,true)+eq(-29,true)" />
-			<setting label="32075" type="enum" id="sound_sensitivity3" lvalues="32077|32078|32079|32080|32081" default="1" visible="eq(-12,true)+lt(-28,2)" enable="eq(-3,true)+eq(-30,true)+eq(-7,true)+eq(-14,1)" />
-			<setting label="32076" type="slider" id="sound_trigger_interval3" default="15" range="5,1,15" option="int" visible="eq(-13,true)+lt(-29,2)" enable="eq(-4,true)+eq(-31,true)+eq(-8,true)+eq(-15,1)" />	
+		<setting label="32090" type="lsep" />
+			<setting label="32091" id="motion3" type="bool" default="false" enable="gt(-2,0)" />
+			<setting label="32092" id="sound3" type="bool" default="false" enable="eq(-3,2)" />
+			<setting label="32093" id="interval3" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
+			<setting label="32094" id="position3" type="labelenum" lvalues="32102|32103|32100|32101" />
+			<setting label="32095" id="scaling3" type="slider" default="0.8" range="0.5,0.1,3.0" />
+			<setting label="32096" id="dur_service3" type="slider" default="12" range="1,1,30" option="int" />
+			<setting label="32097" id="dur_script3" type="slider" default="12" range="1,1,30" option="int" />
+			<setting label="32098" id="p_service3" type="enum" lvalues="32104|32038|32031|32105" default="0" />
+			<setting label="32099" id="p_script3" type="enum" lvalues="32104|32038|32031" default="0" />
 	</category>
-	
 	
 	<category label="32004">
-		<setting label="32030" type="bool" id="camera4" default="false" />
-		<setting label="32023" type="lsep" enable="eq(-1,true)" />
-			<setting label="32031" type="labelenum" id="cameratype4" lvalues="32020|32021|32022" default="0" enable="eq(-2,true)" />
-				<setting label="32032" type="text" id="host4" visible="!eq(-1,2)" enable="eq(-3,true)" />
-				<setting label="32033" type="number" id="port4" default="88" visible="!eq(-2,2)" enable="eq(-4,true)" />
-				<setting label="32034" type="text" id="username4" default="admin"  visible="!eq(-3,2)" enable="eq(-5,true)" />
-				<setting label="32035" type="text" id="password4" option="hidden" visible="!eq(-4,2)" enable="eq(-6,true)" />
-				<setting label="32026" type="text" id="name4" enable="eq(-7,true)" />
-			<setting type="sep" enable="eq(-8,true)" />
-				<setting label="32039" type="enum" id="cameraplayer_source4" lvalues="32027|32028|32025" default="0" enable="eq(-9,true)" />
-				<setting label="32040" type="enum" id="allcameraplayer_source4" lvalues="32027|32029" default="0" enable="eq(-10,true)" />
-				<setting label="32038" type="text" id="mjpeg4" visible="!eq(-9,0)" enable="eq(-11,true)" />
-				<setting label="32037" type="text" id="rtsp4" visible="!eq(-10,0)" enable="eq(-12,true)" />
-				<setting label="32036" type="text" id="snapshot4" visible="!eq(-11,0)" enable="eq(-13,true)" />
+		<setting label="32050" id="name4" type="text" />
+		<setting label="32051" id="type4" type="enum" lvalues="32065|32066|32067|32068" default="0" />
+			<setting label="32052" id="host4" type="text" enable="!eq(-1,3)" />
+			<setting label="32053" id="port4" type="number" default="88" enable="!eq(-2,3)" />
+			<setting label="32054" id="user4" type="text" default="admin" enable="!eq(-3,3)" />
+			<setting label="32055" id="pass4" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32056" id="stream4" type="enum" lvalues="32071|32072" default="0" />
+			<setting label="32057" id="allstream4" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32058" id="preview_stream4" type="enum" lvalues="32072|32073|32074" default="0" />
+			<setting label="32059" id="snapshot_url4" type="text" visible="!eq(-8,0)+!eq(-8,2)" subsetting="true" />
+			<setting label="32060" id="stream_url4" type="text" visible="!eq(-9,0)+!eq(-9,2)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url4" type="text" visible="!eq(-10,0)+!eq(-10,2)" subsetting="true" />
 			
-		<setting label="32041" type="lsep" visible="lt(-12,2)" enable="eq(-14,true)" />
-			<setting label="32042" type="labelenum" id="controls4" lvalues="32043|32044|32045" default="0" visible="lt(-13,2)" enable="eq(-15,true)" />
-			<setting label="32046" type="labelenum" id="alarmtype4" lvalues="32047|32048" default="0" visible="lt(-14,2)" enable="eq(-16,true)" />
+		<setting label="32080" type="lsep" />
+			<setting label="32081" id="ptz4" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
+			<setting label="32022" id="ptz_sensitivity4" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" subsetting="true" />
+			<setting label="32082" id="conn4" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-14,3)+!eq(-2,0)" subsetting="true" />
+			<setting label="32083" id="alarm4" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-15,3)" />
 			
-		<setting label="32051" type="lsep" enable="eq(-17,true)" />
-			<setting label="32052" type="bool" id="preview_enabled4" default="false" enable="eq(-18,true)" />
-			<setting label="32053" type="slider" id="duration4" default="12" range="1,1,30" option="int" subsetting="true" visible="eq(-1,true)" enable="eq(-19,true)" />
-			<setting label="32054" type="labelenum" id="location4" lvalues="32058|32055|32056|32057" subsetting="true" visible="eq(-2,true)" enable="eq(-20,true)" />
-			<setting label="32060" type="slider" id="scaling4" default="0.8" range="0.5,0.1,3.0" subsetting="true" visible="eq(-3,true)" enable="eq(-21,true)" />
-			<setting label="32061" type="bool" id="motion_trigger4" default="false" subsetting="true" visible="eq(-4,true)+lt(-20,2)" enable="eq(-22,true)" />
-			<setting label="32062" type="bool" id="sound_trigger4" default="false" subsetting="true" visible="eq(-5,true)+lt(-21,2)" enable="eq(-7,1)+eq(-23,true)" />
-			<setting label="32063" type="slider" id="check_interval4" default="4" range="1,1,15" option="int" subsetting="true" visible="eq(-6,true)+lt(-22,2)" enable="eq(-24,true)" />
-			<setting label="32066" type="enum" id="preview_source4" lvalues="32027|32029" default="0" subsetting="true" visible="eq(-7,true)" enable="eq(-25,true)" />
-		
-		<setting label="32071" type="lsep" visible="eq(-8,true)+lt(-24,2)" enable="eq(-26,true)"  />
-		<setting label="32072" type="bool" id="update_camera_settings4" default="false" visible="eq(-9,true)+lt(-25,2)" enable="eq(-27,true)" />
-			<setting label="32073" type="enum" id="motion_sensitivity4" lvalues="32077|32078|32079|32080|32081" default="1" visible="eq(-10,true)+lt(-26,2)" enable="eq(-1,true)+eq(-28,true)"/>
-			<setting label="32074" type="slider" id="motion_trigger_interval4" default="15" range="5,1,15" option="int" visible="eq(-11,true)+lt(-27,2)" enable="eq(-2,true)+eq(-29,true)" />
-			<setting label="32075" type="enum" id="sound_sensitivity4" lvalues="32077|32078|32079|32080|32081" default="1" visible="eq(-12,true)+lt(-28,2)" enable="eq(-3,true)+eq(-30,true)+eq(-7,true)+eq(-14,1)" />
-			<setting label="32076" type="slider" id="sound_trigger_interval4" default="15" range="5,1,15" option="int" visible="eq(-13,true)+lt(-29,2)" enable="eq(-4,true)+eq(-31,true)+eq(-8,true)+eq(-15,1)" />	
+		<setting label="32090" type="lsep" />
+			<setting label="32091" id="motion4" type="bool" default="false" enable="gt(-2,0)" />
+			<setting label="32092" id="sound4" type="bool" default="false" enable="eq(-3,2)" />
+			<setting label="32093" id="interval4" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
+			<setting label="32094" id="position4" type="labelenum" lvalues="32103|32100|32101|32102" />
+			<setting label="32095" id="scaling4" type="slider" default="0.8" range="0.5,0.1,3.0" />
+			<setting label="32096" id="dur_service4" type="slider" default="12" range="1,1,30" option="int" />
+			<setting label="32097" id="dur_script4" type="slider" default="12" range="1,1,30" option="int" />
+			<setting label="32098" id="p_service4" type="enum" lvalues="32104|32038|32031|32105" default="0" />
+			<setting label="32099" id="p_script4" type="enum" lvalues="32104|32038|32031" default="0" />
 	</category>
 	
 	
-	<category label="32100">
-		<setting label="32101" type="slider" id="playback_rewind_time" default="10" range="0,1,20" option="int" />
-		<setting label="32102" type="enum" id="dismissed_behavior" lvalues="32103|32104" default="0" />
-		<setting label="32105" type="slider" id="dismissed_time" default="15" range="0,1,60" option="int" />
-		<setting label="32106" type="enum" id="preview_manual_open_behavior" lvalues="32107|32108" default="0" />
-		
-		<setting label="32111" type="lsep" />
-		<setting label="32112" type="bool" id="setting_menus" default="true" subsetting="true" />
-		<setting label="32113" type="bool" id="context_menu" default="true" subsetting="true" />
-		<setting label="32114" type="bool" id="home_screen" default="false" subsetting="true" />
-		<setting label="32115" type="bool" id="library_navigation" default="false" subsetting="true" />
-		<setting label="32116" type="bool" id="system_information" default="false" subsetting="true" />
-		<setting label="32117" type="bool" id="virtual_keyboard" default="true" subsetting="true" />
-		<setting label="32118" type="bool" id="player_controls" default="true" subsetting="true" />
-		<setting label="32119" type="text" id="other_window_ids" />
-		<setting type="sep" />
-		<setting label="32016" type="enum" id="loglevel" lvalues="32017|32018|32019" default="0" />
-	</category>
-	
-	<category label="Screensaver">
-	</category>
 	
 	
 </settings>

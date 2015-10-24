@@ -1,34 +1,13 @@
-'''
-   Notes about this file:
-   1. Send and Get commands from Camera are not yet confirmed or guaranteed (such as updating camera motion settings)
-   2. Schedule, and other Camera Settings are not yet implemented but will be in the future
+"""
+plugin.video.surveillanceroom
 
-   Function Definition:
-       getSettings(settings_to_get = 'all', cameras_to_get = '1234'):
+A Kodi add-on by Maikito26
 
-       settings_to_get: 'enabled'(0), 'basic'(1), 'features'(2), 'all'(3)
-       cameras_to_get: '1', '2', '3', '4', '1234'
-
-       returns boolean:
-           'True' if there is one Enabled camera, otherwise 'False'
-
-       returns list of lists:
-           [
-           0:  [0]camera_number
-           
-           1:  [1]host  [2]port  [3]username  [4]password  [5]name  [6]snapshot  [7]rtsp  
-               [8]mpjeg  [9]cameratype  [10]cameraplayer_source  [11]allcameraplayer_source
-               
-           2:  [12]pan_tilt  [13]zoom  [14]motionsupport  [15]soundsupport
-           
-           3:  [16]preview_enabled  [17]duration  [18]location  [19]scaling  [20]motion_enabled
-                   [21]sound_enabled  [22]check_interval  [23]preview_source  [24]trigger_interval
-           ]
-
-'''
+This module is used to obtain add-on settings and camera settings
+"""
 
 import xbmc, xbmcgui, xbmcaddon
-from resources.lib import foscam
+import foscam2, utils
 
 __addon__ = xbmcaddon.Addon()
 
@@ -55,376 +34,357 @@ INVALID_PASSWORD_CHARS = ('{', '}', ':', ';', '!', '?', '@', '\\', '/')
 INVALID_USER_CHARS = ('@',)
 
 
+### Basic Addon Setting Controls ###
 
-def get_playbackRewindTime():
-    playback_rewind_time = int(__addon__.getSetting('playback_rewind_time'))
-    return playback_rewind_time
-
-def get_globalSettings():
-    dismissed_behavior  = int(__addon__.getSetting('dismissed_behavior'))
-    dismissed_time      = int(__addon__.getSetting('dismissed_time'))
-    preview_manual_open = int(__addon__.getSetting('preview_manual_open_behavior'))
+def refreshAddonSettings():
+    global __addon__
+    __addon__ = xbmcaddon.Addon()
     
+def setSetting(setting, camera_number='', value=''):
+    utils.log(2, 'SETTINGS :: %s%s Value Set as - %s' %(setting, camera_number, value))
+    return __addon__.setSetting(setting + camera_number, value)
+    
+def getSetting(setting, camera_number=''):
+    return __addon__.getSetting(setting + camera_number)
+
+def getSetting_int(setting, camera_number=''):
+    return int(__addon__.getSetting(setting + camera_number))
+
+def getSetting_bool(setting, camera_number=''):
+    if 'true' in __addon__.getSetting(setting + camera_number):
+        return True
+    else:
+        return False
+
+def getSetting_float(setting, camera_number=''):
+    return float(__addon__.getSetting(setting + camera_number))
+
+
+### Specialize setting Functions ###
+
+def enabled_camera(camera_number):
+    return getSetting_bool('enabled', camera_number)
+
+def enabled_preview(camera_number):
+    if enabled_camera(camera_number):
+        return getSetting_bool('enabled_preview', camera_number)
+    else:
+        return False
+    
+def atLeastOneCamera(cameras_to_check="1234"):
+    for camera_number in cameras_to_check:
+        if enabled_camera(camera_number):
+            return True
+    return False
+
+def getAllEnabledCameras(monitor):
+    enabled_cameras = []
+    for camera_number in "1234":
+        
+        enabled = enabled_camera(camera_number)
+        connected = monitor.cache_test_result(camera_number)
+        
+        if enabled and not connected:
+            test_settings = getBasicSettings(camera_number, monitor, useCache=False)
+            connected = monitor.cache_test_result(camera_number)
+
+        if enabled and connected:
+            enabled_cameras.append(camera_number)
+            
+    return enabled_cameras
+
+def getCameraType(camera_number):
+    return getSetting_int('type', camera_number)
+
+def getSupportedAlarms(camera_number):
+    return getSetting_int('alarm', camera_number)
+    
+def getEnabledAlarms(camera_number):
+    motion_enabled = False
+    sound_enabled = False
+    
+    supported = getSupportedAlarms(camera_number)
+
+    if supported > 0:
+        motion_enabled = getSetting_bool('motion', camera_number)
+        
+    if supported > 1: 
+        sound_enabled = getSetting_bool('sound', camera_number)
+        
+    return motion_enabled, sound_enabled
+
+def getSnapShotUrl(camera_number):
+    return getStreamUrl(1, camera_number, 1)
+
+def getNewArt(camera_number, value = None):
+    if value is None:
+        value = getSetting_int('fanart')
+    print 'Value' + str(value)
+    if value == 0:
+        return getSnapShotUrl(camera_number)
+    return None
+
+def getCameraName(camera_number):
+    name = getSetting('name', camera_number)
+    if name == '':
+        name = '%s %s' %(translation(32000 + int(camera_number)), camera_number)
+    return name
+
+def getDisabledWindowIds():   
     window_ids = []
-    if 'true' in __addon__.getSetting('setting_menus'):
+    if 'true' in __addon__.getSetting('w_setting'):
         window_ids.extend([10140, 10004, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10018, 10019, 10021])
-    if 'true' in __addon__.getSetting('context_menu'):
+    if 'true' in __addon__.getSetting('w_context'):
         window_ids.extend([10106])
-    if 'true' in __addon__.getSetting('home_screen'):
+    if 'true' in __addon__.getSetting('w_home'):
         window_ids.extend([10000])
-    if 'true' in __addon__.getSetting('library_navigation'):
+    if 'true' in __addon__.getSetting('w_library'):
         window_ids.extend([10001, 10002, 10003, 10005, 10006, 10025, 10028, 10040])
-    if 'true' in __addon__.getSetting('system_information'):
+    if 'true' in __addon__.getSetting('w_sysinfo'):
         window_ids.extend([10007, 10100])
-    if 'true' in __addon__.getSetting('virtual_keyboard'):
+    if 'true' in __addon__.getSetting('w_keyboard'):
         window_ids.extend([10103, 10109, 10110])
-    if 'true' in __addon__.getSetting('player_controls'):
+    if 'true' in __addon__.getSetting('w_controls'):
         window_ids.extend([10114, 10115, 10120, 101222, 10123, 10124, 12901, 12902, 12903, 12904])
 
-    other_window_ids = __addon__.getSetting('other_window_ids')
+    other_window_ids = __addon__.getSetting('w_windowid')
     if other_window_ids != '':
         window_ids_list = other_window_ids.split(',')
         for window_id in window_ids_list:
             window_ids.extend(int(window_id))
-
-    global_settings = [dismissed_behavior, dismissed_time, preview_manual_open, window_ids]
-    #print 'Global Settings'
-    #print str(global_settings)
-    return global_settings
-
-
-
-def get_basicSettings(camera_number):
-    cameratype = __addon__.getSetting('cameratype' + camera_number).lower()
-    basic_settings = [camera_number]
-    
-
-    name = __addon__.getSetting('name' + camera_number)
-    if name == '':
-        del name
-        name = '%s %s' %(translation(32008), camera_number)
-    
-    if 'foscam' in cameratype:
-        host = __addon__.getSetting('host' + camera_number)
-        port = __addon__.getSetting('port' + camera_number)
-        username = __addon__.getSetting('username' + camera_number)
-        password = __addon__.getSetting('password' + camera_number)
+            
+    return window_ids
         
-        basic_settings.extend([host, port, username, password, name])
+def getStreamType(source, camera_number):
+    '''
+    Source:
+        0   Video Stream
+        1   All Camera Player
+        2   Preview
+    '''
+    stream_type = None
+    
+    if source == 0:
+        stream_type = getSetting_int('stream', camera_number)
+            
+    elif source == 1:
+        stream_type = getSetting_int('allstream', camera_number)
+        
+    elif source == 2:
+        stream_type = getSetting_int('preview_stream', camera_number)
+
+    return stream_type
+
+def getGenericIpcamUrl(source, stream_type, camera_number):
+    '''
+    Source  -   Stream_type:
+        0   Video Stream  -  0 Video; 1 Mjpeg    
+        1   All Camera Player  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
+        2   Preview  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
+    '''
+
+    url = None
+
+    if (source > 0 and stream_type != 1) or (source == 0 and stream_type == 1):
+        url = getSetting('mjpeg_url', camera_number)
+        
+    elif (source == 0 and stream_type == 0):
+        url = getSetting('stream_url', camera_number)
+        
+    else:    
+        url = getSetting('snapshot_url', camera_number)
+
+    return url
+
+def getFoscamUrl(source, stream_type, camera_number):
+    '''
+    Source  -   Stream_type:
+        0   Video Stream  -  0 Video; 1 Mjpeg    
+        1   All Camera Player  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
+        2   Preview  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
+    '''
+
+    url = None
+    with foscam2.FoscamCamera(getBasicSettings(camera_number)) as camera:
+    
+        if (source > 0 and stream_type != 1) or (source == 0 and stream_type == 1):
+            url = camera.mjpeg_url
+            
+        elif (source == 0 and stream_type == 0):
+            url = camera.video_url
+            
+        else:    
+            url = camera.snapshot_url
+
+    return url
+
+def getFoscamOverrideUrl(source, stream_type, camera_number):
+    '''
+    Source  -   Stream_type:
+        0   Video Stream  -  0 Video; 1 Mjpeg    
+        1   All Camera Player  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
+        2   Preview  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
+    '''
+
+    url = None
+    with foscam2.FoscamCamera(getBasicSettings(camera_number)) as camera:
+    
+        if (source > 0 and stream_type != 1) or (source == 0 and stream_type == 1):
+            url = getSetting('mjpeg_url', camera_number)
+            if url == '':
+                url = camera.mjpeg_url
+            
+        elif (source == 0 and stream_type == 0):
+            url = getSetting('stream_url', camera_number)
+            if url == '':
+                url = camera.video_url
+            
+        else:
+            url = getSetting('snapshot_url', camera_number)
+            if url == '':
+                url = camera.snapshot_url
+
+    return url
+    
+def getStreamUrl(source, camera_number, stream_type=None):
+    '''
+    MAIN CALLER
+    Source:
+        0   Video Stream
+        1   All Camera Player
+        2   Preview
+    '''
+
+    camera_type = getCameraType(camera_number)
+    if not stream_type:
+        stream_type = getStreamType(source, camera_number)
+    url = None
+
+    if camera_type == 0 or camera_type == 1:
+        url = getFoscamUrl(source, stream_type, camera_number)
+
+    elif camera_type == 1:
+        url = getFoscamOverrideUrl(source, stream_type, camera_number)
         
     else:
-        basic_settings.extend([' ', ' ', ' ', ' ', name])
+        url = getGenericIpcamUrl(source, stream_type, camera_number)
 
-    snapshot = __addon__.getSetting('snapshot' + camera_number)
-    rtsp = __addon__.getSetting('rtsp' + camera_number)
-    mpjeg = __addon__.getSetting('mjpeg' + camera_number)
+    return url    
+
+def getBasicSettings(camera_number, monitor=None, useCache=True):
+    """ Returns the login details of the camera """
     
-    cameraplayer_source = int(__addon__.getSetting('cameraplayer_source' + camera_number))
-    allcameraplayer_source = int(__addon__.getSetting('allcameraplayer_source' + camera_number))
-
-    basic_settings.extend([snapshot, rtsp, mpjeg, cameratype, cameraplayer_source, allcameraplayer_source])
-    return basic_settings
-
-   
-def checkSettings(basic_settings, useCache):
-    '''
-    basic_settings:
-    [0]camera_number
-    [1]host  [2]port  [3]username  [4]password  [5]name  [6]snapshot  [7]rtsp  
-    [8]mpjeg  [9]cameratype  [10]cameraplayer_source  [11]allcameraplayer_source
-    '''
-               
-    camera_number = basic_settings[0]
-    host = basic_settings[1]
-    username = basic_settings[3]
-    password = basic_settings[4]
-    camera_type = basic_settings[9]
-    checked_settings = basic_settings[1::1]
-
-
-    if 'foscam' in camera_type:
+    camera_type = getCameraType(camera_number)
+    utils.log(4, 'SETTINGS :: Use Cache: %s;  Camera %s;  Camera Type: %s;  Monitor: %s' %(useCache, camera_number, camera_type, monitor)) 
+              
+    if camera_type < 3:
+        ''' Foscam Camera '''
         
-        #User Input Error Checking
+        host = getSetting('host', camera_number)
         if not host:
-            print 'Error: Camera {0} - No host specified.'.format(camera_number)
-            return False, None
-
+            utils.log(3, 'SETTINGS :: Camera %s - No host specified.' %camera_number)
+            return None
+        
+        port = getSetting('port', camera_number)
+        if not port:
+            utils.log(3, 'SETTINGS :: Camera %s - No port specified.' %camera_number)
+            return None
+        
+        username = getSetting('username', camera_number)
         invalid = invalid_user_char(username)
         if invalid:
-            print 'Error: Camera {0} - Invalid character in user name: {1}'.format(camera_number, invalid)
-            return False, None
-
+            utils.log(3, 'SETTINGS :: Camera %s - Invalid character in user name: %s' %(camera_number, invalid))
+            return None
+        
+        password = getSetting('password', camera_number)
         invalid = invalid_password_char(password)
         if invalid:
-            print 'Error: Camera {0} - Invalid character in password: {1}'.format(camera_number, invalid)
-            return False, None
+            utils.log(3, 'SETTINGS :: Camera %s - Invalid character in password: %s' %(camera_number, invalid))
+            return None
 
-        #Camera Settings
-        with foscam.Camera(basic_settings) as camera:
+        basic_settings = [camera_number, host, port, username, password]
+
+        # Camera test and caching logic
+        if monitor:
             if useCache:
-                print 'Camera {0} - Checking previous test result...'.format(camera_number)
-                success = bool(xbmcgui.Window(10000).getProperty('Camera%sTestResult' %camera_number))
-                msg = ''
-
+                utils.log(2, 'SETTINGS :: Camera %s - Checking previous test result...' %camera_number)
+                success_code = monitor.cache_get_test_result(camera_number)
+                
             else:    
-                print 'Camera {0} - Testing connection...'.format(camera_number)
-                success, msg = camera.test()
-
-            if not success:
-                xbmcgui.Window(10000).clearProperty('Camera%sTestResult' %camera_number)
-                print 'Error: Camera {0} - {1}'.format(camera_number, msg)
-                return False, None
-
-            #Caches camera test result
-            xbmcgui.Window(10000).setProperty('Camera%sTestResult' %camera_number, '1')
-
-            #Makes sure camera is enabled for mjpeg if required.
-            if not useCache:
-                if __addon__.getSetting('preview_source' + camera_number) == 0 or basic_settings[10] == 0 or basic_settings[11] == 0:
-                    camera.enable_mjpeg
-
-            #Sets the URL if not explicitly set for Foscam Cameras 
-            if len(checked_settings[5]) < 6:
-                checked_settings[5] = camera.snapshot_url
-            if len(checked_settings[6]) < 6:
-                if basic_settings[10] == 2:
-                    checked_settings[6] = camera.video_sub_url
-                else:
-                    checked_settings[6] = camera.video_url
-            if len(checked_settings[7]) < 6:
-                checked_settings[7] = camera.mjpeg_url
-
-        return True, checked_settings
-
-    
-    else:
-        #Totally needs updated for empty URLs that are required for non-Foscam Cameras!
-        return True, checked_settings
-
-
-
-
-def getSettings(settings_to_get = 'all', cameras_to_get = '1234'):
-    '''
-    Text Here
-    '''
-    
-    global __addon__
-    __addon__ = xbmcaddon.Addon()
-
-    if settings_to_get == 'enabled':
-        settings_level = 0
-    elif settings_to_get == 'basic':
-        settings_level = 1
-    elif settings_to_get == 'features':
-        settings_level = 2
-    elif settings_to_get == 'all':
-        settings_level = 3
-    
-    activeCameras = []
-    configuredCorrectly = False
-
-
-    for camera_number in cameras_to_get:
+                utils.log(2, 'SETTINGS :: Camera %s - Testing connection...'% camera_number)
+                with foscam2.FoscamCamera(basic_settings) as camera:
+                    success_code, response = camera.get_dev_state()
+                monitor.cache_set_test_result(camera_number, success_code)
+            
+            if success_code != 0:
+                utils.log(3, 'SETTINGS :: Unable to connect to Camera %s' %camera_number)
+                return None
         
-        '''
-        Enabled Settings - Settings Level 0
-        '''
-        if 'true' in __addon__.getSetting('camera%s' %camera_number):
-            camera_enabled = True
-            print 'Camera {0} - Enabled'.format(camera_number)
+            utils.log(2, 'SETTINGS :: Successful connection to Camera %s' %camera_number)
+            utils.log(4, 'SETTINGS :: Camera %s;  Settings: %s;  Cache Used: %s' %(camera_number, basic_settings, useCache))
 
-            if settings_level == 0:
-                activeCameras.append([camera_number])
-                
-        else:
-            camera_enabled = False
-            print 'Camera {0} - Not Enabled.'.format(camera_number)
-
-            
-
-        if camera_enabled:
-
-            '''
-            Basic Settings - Settings Level 1
-            '''
-            if settings_level > 0:
-                basic_settings = get_basicSettings(camera_number)
-
-                useCache = False
-                if settings_level < 3:
-                    useCache = True
+            # MJPEG Enable - for Service Run.  Ensures MJPEG URLs are Successful
+            if not useCache:
+                if getSetting_int('stream', camera_number) == 1 or getSetting_int('allstream', camera_number) != 1 or getSetting_int('preview_stream', camera_number) != 1:
+                    utils.log(2, 'SETTINGS :: Enabling MJPEG on subStream for Camera %s' %camera_number)
+                    camera.enable_mjpeg()
                     
-                configuredCorrectly, checked_basic_settings = checkSettings(basic_settings, useCache)
-                
+    else:
+        ''' Generic IP Camera '''
+        
+        if monitor and not useCache:
+            monitor.cache_set_test_result(camera_number, 0)
+               
+        basic_settings = [camera_number, '', '', '', '']
+        utils.log(4, 'SETTINGS :: Camera %s;  Type: Generic;  Settings: %s' %(camera_number, basic_settings))
 
-            if configuredCorrectly:
-                activeCameras.append([camera_number])
-                activeCameras[len(activeCameras)-1].extend(checked_basic_settings)
-
-
-                '''
-                Features Settings - Settings Level 2
-                '''
-                if settings_level > 1:
-                    pan_tilt = False
-                    zoom = False
-                    motionsupport = False
-                    soundsupport = False
-
-                    controls = __addon__.getSetting('controls' + camera_number).lower()
-                    
-                    if 'pan' in controls:
-                        pan_tilt = True
-
-                    if 'zoom' in controls:
-                        zoom = True
-                        
-                    alarmtype = __addon__.getSetting('alarmtype' + camera_number).lower()
-                    if 'motion' in alarmtype:
-                        motionsupport = True
-                    if 'sound' in alarmtype:
-                        soundsupport = True
-
-                    activeCameras[len(activeCameras)-1].extend([pan_tilt, zoom, motionsupport, soundsupport])
+    return basic_settings
 
 
-                '''
-                All Settings - Settings Level 3
-                '''
-                if settings_level > 2:
-                    
-                    preview_enabled  = False
-                    if 'true' in __addon__.getSetting('preview_enabled' + camera_number):
-                        preview_enabled = True
+### Foscam Camera Settings ###
 
-                    activeCameras[len(activeCameras)-1].extend([preview_enabled])
-     
-                    if preview_enabled:
-                        duration = float(__addon__.getSetting('duration' + camera_number))
-                        location = __addon__.getSetting('location' + camera_number).lower()
-                        scaling = float(__addon__.getSetting('scaling' + camera_number))
-                        
-                        motion_enabled = False
-                        sound_enabled = False
-                        
-                        if 'true' in __addon__.getSetting('motion_trigger' + camera_number) and motionsupport:
-                            motion_enabled = True
+def resetLocation(camera_number):
+    if getSetting_int('ptz', camera_number) > 0:
+        reset_mode = getSetting_int('conn', camera_number)
+        if reset_mode > 0:
+            if reset_mode == 2:
+                reset_mode = 3
+            with foscam2.FoscamCamera(getBasicSettings(camera_number)) as camera:
+                camera.ptz_home_location(reset_mode)
+                utils.log(2, 'SETTINGS :: Reset Camera %s to the home location' %camera_number)
 
-                        if 'sound' in __addon__.getSetting('sound_trigger' + camera_number) and soundsupport:
-                            sound_enabled = True
-
-                        check_interval = int(__addon__.getSetting('check_interval' + camera_number))
-                        preview_source = int(__addon__.getSetting('preview_source' + camera_number))
-
-                        if 'true' in __addon__.getSetting('update_camera_settings' + camera_number):
-                            set_CameraAlarmSettings(basic_settings, motion_enabled, sound_enabled)
-                            
-                        else:
-                            get_CameraAlarmSettings(basic_settings, motion_enabled, sound_enabled)
-                            
-                        __addon__ = xbmcaddon.Addon()                       #Quick Refresh of Settings in RAM
-                            
-                        motion_trigger_interval = int(__addon__.getSetting('motion_trigger_interval' + camera_number))
-                        sound_trigger_interval = int(__addon__.getSetting('sound_trigger_interval' + camera_number))
-
-                        trigger_interval = 5
-                        
-                        if motion_enabled and sound_enabled:
-                            trigger_interval = min(motion_trigger_interval, sound_trigger_interval)
-                            
-                        elif motion_enabled:
-                            trigger_interval = motion_trigger_interval
-                            
-                        elif sound_enabled:
-                            trigger_interval = sound_trigger_interval
+def getTriggerInterval(camera_number, camera_settings, motion_enabled, sound_enabled):
+    """ Gets the alarm trigger interval from the camera """
+    
+    if camera_settings[2] != '':
+        with foscam2.FoscamCamera(camera_settings) as camera:
+            motion_trigger_interval = int(camera.get_motion_detect_config()[1].get('triggerInterval'))
+            sound_trigger_interval = int(camera.get_sound_detect_config()[1].get('triggerInterval'))
+    trigger_interval = 5
+    
+    if motion_enabled and sound_enabled:
+        trigger_interval = min(motion_trigger_interval, sound_trigger_interval)    
+    elif motion_enabled:
+        trigger_interval = motion_trigger_interval  
+    elif sound_enabled:
+        trigger_interval = sound_trigger_interval
+        
+    return trigger_interval
 
 
-                        activeCameras[len(activeCameras)-1].extend([
-                                                                    duration, location, scaling, motion_enabled, sound_enabled,
-                                                                    check_interval, preview_source, trigger_interval
-                                                                    ])
-                    #print 'All Settings'
-                    #print str(activeCameras[len(activeCameras)-1])
-
-                  
-    if len(activeCameras) > 0:
-        return True, activeCameras
-
-    return False, 'No cameras configured.'          
-
-
-def set_CameraAlarmSettings(camera_settings, motion_enabled, sound_enabled):
-    camera_number = camera_settings[0]
-
-    with foscam.Camera(camera_settings) as camera:
-        if motion_enabled:
-            command = camera.set_motion_detect_config()
-            command['isEnable'] = 1
-            command['sensitivity'] = __addon__.getSetting('motion_sensitivity' + camera_number)
-            command['triggerInterval'] = __addon__.getSetting('motion_trigger_interval' + camera_number)                                             
-            camera.send_command(command)
-            
-        if sound_enabled:
-            command = camera.set_sound_detect_config()
-            command['isEnable'] = 1
-            command['sensitivity'] = __addon__.getSetting('sound_sensitivity' + camera_number)
-            command['triggerInterval'] = __addon__.getSetting('sound_trigger_interval' + camera_number)
-            #for iday in range(7):
-            #    command['schedule{0:d}'.format(iday)] = 2**48 - 1
-            camera.send_command(command)
-
-    __addon__.setSetting('update_camera_settings' + camera_number, 'false')
-
-
-def get_CameraAlarmSettings(camera_settings, motion_enabled, sound_enabled):
-    camera_number = camera_settings[0]
-
-    with foscam.Camera(camera_settings) as camera:
-        if motion_enabled:
-            response = camera.get_motion_detect_config()
-            print str(response)
-            __addon__.setSetting('motion_sensitivity' + camera_number, str(response['sensitivity']))
-            __addon__.setSetting('motion_trigger_interval' + camera_number, str(response['triggerInterval']))
-            command = camera.set_motion_detect_config()
-            command['isEnable'] = 1
-            send_http_command(command)
-                
-        if sound_enabled:
-            response = camera.get_sound_detect_config()
-            __addon__.setSetting('sound_sensitivity' + camera_number, str(response['sensitivity']))
-            __addon__.setSetting('sound_trigger_interval' + camera_number, str(response['triggerInterval']))
-            command = camera.set_sound_detect_config()
-            command['isEnable'] = 1
-            send_http_command(command)
-
-
-def send_http_command(command):
-    response = command.send()
-    if not response:
-        msg = ('{0}: {1}').format(translation(32104), response.message)
-        notify(msg)
-
-def translation(id): 
-    return __addon__.getLocalizedString(id) #.encode('utf-8') 
-
-def notify(msg):
-    __icon__  = __addon__.getAddonInfo('icon').decode("utf-8")
-    addon_name = translation(32000)
-    xbmcgui.Dialog().notification(addon_name, msg, icon = __icon__) 
+### Error Checking Support ###
 
 def invalid_char(credential, chars, stringid, show_dialog):
     for char in chars:
         if char in credential:
             if show_dialog:
-                addon_name = translation(32000)
-                xbmcgui.Dialog().ok(addon_name, translation(stringid), ' ', ' '.join(chars))
+                utils.dialog_ok(utils.translation(stringid), ' ', ' '.join(chars))
             return char
     return False
 
 def invalid_password_char(password, show_dialog=False):
-    return invalid_char(password, INVALID_PASSWORD_CHARS, 32105, show_dialog)
+    return invalid_char(password, INVALID_PASSWORD_CHARS, 32205, show_dialog)
 
 def invalid_user_char(user, show_dialog=False):
-    return invalid_char(user, INVALID_USER_CHARS, 32106, show_dialog)
+    return invalid_char(user, INVALID_USER_CHARS, 32206, show_dialog)
 
