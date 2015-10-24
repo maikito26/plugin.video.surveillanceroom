@@ -1,3 +1,8 @@
+v1.0.1 (Oct 24 2015)
+--------------------
+Fixed Issues: 
+- Removed reference to old foscam.py in service.py
+
 v1.0.0 (Oct 24 2015) - Official Release
 ---------------------------------------
 Fixed Issues: 

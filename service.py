@@ -8,7 +8,7 @@ Service loop which enables preview window capability
 
 import xbmc, xbmcaddon, xbmcvfs
 import threading, time, os, Queue
-from resources.lib import foscam, foscam2, monitor, previewgui, settings, utils
+from resources.lib import foscam2, monitor, previewgui, settings, utils
 
 __addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
