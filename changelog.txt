@@ -1,3 +1,8 @@
+v1.0.3 (Oct 24 2015)
+--------------------
+Fixed Issues: 
+- Further improved utils.py to check if data before executing commands
+
 v1.0.2 (Oct 24 2015)
 --------------------
 Fixed Issues: 
