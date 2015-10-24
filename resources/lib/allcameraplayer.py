@@ -146,12 +146,12 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
         while not monitor.abortRequested() and self.isRunning:
             
             try:
-                filename = os.path.join(_datapath, 'AllCamera_%d.%d.jpg') %(i, x)
+                filename = os.path.join(_datapath, 'AllCamera_%s.%d.jpg') %(i, x)
                 urlretrieve(url, filename)
                 
                 if os.path.exists(filename): 
                     control[0].setImage(filename, useCache=False)                
-                    xbmcvfs.delete(os.path.join(_datapath, 'AllCamera_%d.%d.jpg') %(i, x - 1))
+                    xbmcvfs.delete(os.path.join(_datapath, 'AllCamera_%s.%d.jpg') %(i, x - 1))
                     control[1].setImage(filename, useCache=False)
                     x+=1
                     

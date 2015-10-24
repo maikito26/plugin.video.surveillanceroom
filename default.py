@@ -12,7 +12,7 @@ from resources.lib import utils
 
 __addon__ = xbmcaddon.Addon() 
 __addonid__ = __addon__.getAddonInfo('id') 
-__path__ = xbmc.translatePath(('special://home/addons/{0}').format(__addonid__)).decode('utf-8')                 
+_path = xbmc.translatePath(('special://home/addons/{0}').format(__addonid__)).decode('utf-8')                 
 
 
 def param_to_dict(parameters):
@@ -74,14 +74,14 @@ def advanced_camera_menu(camera_number):
         #Show Preview
         addDirectoryItem(name = utils.translation(32210),
                      icon = utils.get_icon('settings'),
-                     fanart = utils.get_fanart('default'),
+                     fanart = utils.get_fanart(camera_number),
                      parameters = {'action': 'show_preview',
                                    'camera_number': camera_number})
         
         #Disable Preview
         addDirectoryItem(name = utils.translation(32212),
                          icon = utils.get_icon('settings'),
-                         fanart = utils.get_fanart('default'),
+                         fanart = utils.get_fanart(camera_number),
                          parameters = {'action': 'disable_preview',
                                        'camera_number': camera_number})
 
@@ -90,7 +90,7 @@ def advanced_camera_menu(camera_number):
         #Enable Preview
         addDirectoryItem(name = utils.translation(32211),
                          icon = utils.get_icon('settings'),
-                         fanart = utils.get_fanart('default'),
+                         fanart = utils.get_fanart(camera_number),
                          parameters = {'action': 'enable_preview',
                                        'camera_number': camera_number})
 
@@ -110,7 +110,7 @@ def advanced_camera_menu(camera_number):
         #Play Stream no Controls
         addDirectoryItem(name = utils.translation(32214),
                          icon = utils.get_icon('settings'),
-                         fanart = utils.get_fanart('default'),
+                         fanart = utils.get_fanart(camera_number),
                          parameters = {'action': 'single_camera_no_controls',
                                        'camera_number': camera_number})
         
@@ -118,14 +118,14 @@ def advanced_camera_menu(camera_number):
         #Camera Settings
         addDirectoryItem(name = utils.translation(32215),
                          icon = utils.get_icon('settings'),
-                         fanart = utils.get_fanart('default'),
+                         fanart = utils.get_fanart(camera_number),
                          parameters = {'action': 'camera_settings',
                                        'camera_number': camera_number})
 
         #Reboot Camera
         addDirectoryItem(name = utils.translation(32216),
                          icon = utils.get_icon('settings'),
-                         fanart = utils.get_fanart('default'),
+                         fanart = utils.get_fanart(camera_number),
                          parameters = {'action': 'reboot',
                                        'camera_number': camera_number})
 
@@ -192,9 +192,11 @@ def main_menu():
                 
                 camera_settings = settings.getBasicSettings(camera_number)
                 list_label = settings.getCameraName(camera_number)
-                
-                new_art_url = settings.getNewArt(camera_number)
-                utils.log(4, 'Get New Fanart Enabled: %s' %new_art_url)
+
+                new_art_url = None
+                if camera_settings:
+                    new_art_url = settings.getNewArt(camera_number)
+                    utils.log(4, 'Get New Fanart Enabled: %s' %new_art_url)
 
                 # Single Camera Player for enabled cameras
                 addDirectoryItem(name = list_label,

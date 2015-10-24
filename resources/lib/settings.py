@@ -119,7 +119,7 @@ def getSnapShotUrl(camera_number):
 def getNewArt(camera_number, value = None):
     if value is None:
         value = getSetting_int('fanart')
-    print 'Value' + str(value)
+    
     if value == 0:
         return getSnapShotUrl(camera_number)
     return None
@@ -127,7 +127,7 @@ def getNewArt(camera_number, value = None):
 def getCameraName(camera_number):
     name = getSetting('name', camera_number)
     if name == '':
-        name = '%s %s' %(translation(32000 + int(camera_number)), camera_number)
+        name = '%s' %utils.translation(32000 + int(camera_number))
     return name
 
 def getDisabledWindowIds():   
@@ -290,20 +290,20 @@ def getBasicSettings(camera_number, monitor=None, useCache=True):
             utils.log(3, 'SETTINGS :: Camera %s - No port specified.' %camera_number)
             return None
         
-        username = getSetting('username', camera_number)
+        username = getSetting('user', camera_number)
         invalid = invalid_user_char(username)
         if invalid:
             utils.log(3, 'SETTINGS :: Camera %s - Invalid character in user name: %s' %(camera_number, invalid))
             return None
         
-        password = getSetting('password', camera_number)
+        password = getSetting('pass', camera_number)
         invalid = invalid_password_char(password)
         if invalid:
             utils.log(3, 'SETTINGS :: Camera %s - Invalid character in password: %s' %(camera_number, invalid))
             return None
 
         basic_settings = [camera_number, host, port, username, password]
-
+        
         # Camera test and caching logic
         if monitor:
             if useCache:
@@ -317,7 +317,7 @@ def getBasicSettings(camera_number, monitor=None, useCache=True):
                 monitor.cache_set_test_result(camera_number, success_code)
             
             if success_code != 0:
-                utils.log(3, 'SETTINGS :: Unable to connect to Camera %s' %camera_number)
+                utils.log(3, 'SETTINGS :: No connection to Camera %s.  Code: %s.  Settings: %s' %(camera_number, success_code, basic_settings))
                 return None
         
             utils.log(2, 'SETTINGS :: Successful connection to Camera %s' %camera_number)
