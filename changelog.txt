@@ -1,3 +1,8 @@
+v1.0.4 (Oct 24 2015)
+--------------------
+Fixed Issues: 
+- Removing comment that was placed in error
+
 v1.0.3 (Oct 24 2015)
 --------------------
 Fixed Issues: 

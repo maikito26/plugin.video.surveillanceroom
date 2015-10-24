@@ -88,8 +88,7 @@ def remove_cached_art(art):
         
         if data[0]:
             
-            log(4, 'Removing Cached Art :: SQL Output: %s' %data[0]) -> Causes an error on first time configuring
-            
+            log(4, 'Removing Cached Art :: SQL Output: %s' %data[0])
             file_to_delete = os.path.join(_tbn_path, data[0])
             log(4, 'Removing Cached Art :: File to be removed: %s' %file_to_delete)
 
