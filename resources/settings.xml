@@ -68,6 +68,7 @@
 			<setting label="32097" id="dur_script1" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="p_service1" type="enum" lvalues="32104|32038|32031|32105" default="0" />
 			<setting label="32099" id="p_script1" type="enum" lvalues="32104|32038|32031" default="0" />
+			<setting label="32106" id="p_scripttoggle1" type="enum" lvalues="32107|32108" default="0" />
 	</category>
 	
 	<category label="32002">
@@ -100,6 +101,7 @@
 			<setting label="32097" id="dur_script2" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="p_service2" type="enum" lvalues="32104|32038|32031|32105" default="0" />
 			<setting label="32099" id="p_script2" type="enum" lvalues="32104|32038|32031" default="0" />
+			<setting label="32106" id="p_scripttoggle2" type="enum" lvalues="32107|32108" default="0" />
 	</category>
 	
 	<category label="32003">
@@ -132,6 +134,7 @@
 			<setting label="32097" id="dur_script3" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="p_service3" type="enum" lvalues="32104|32038|32031|32105" default="0" />
 			<setting label="32099" id="p_script3" type="enum" lvalues="32104|32038|32031" default="0" />
+			<setting label="32106" id="p_scripttoggle3" type="enum" lvalues="32107|32108" default="0" />
 	</category>
 	
 	<category label="32004">
@@ -164,6 +167,7 @@
 			<setting label="32097" id="dur_script4" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="p_service4" type="enum" lvalues="32104|32038|32031|32105" default="0" />
 			<setting label="32099" id="p_script4" type="enum" lvalues="32104|32038|32031" default="0" />
+			<setting label="32106" id="p_scripttoggle4" type="enum" lvalues="32107|32108" default="0" />
 	</category>
 	
 	

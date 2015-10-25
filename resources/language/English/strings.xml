@@ -106,9 +106,9 @@
   <string id="32103">Top Right</string>
   <string id="32104">Duration and no Alarm is detected</string>
   <string id="32105">No Alarm is detected</string>
-  <string id="32106"></string>
-  <string id="32107"></string> 
-  <string id="32108"></string>
+  <string id="32106">Calling Script Multiple Times</string>
+  <string id="32107">Does Nothing</string> 
+  <string id="32108">Toggles Preview Open/Closed</string>
   <string id="32109"></string>
   <string id="32111">Disable Preview Service on</string>
   <string id="32112">Settings Menus</string>

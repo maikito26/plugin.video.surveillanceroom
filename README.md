@@ -13,7 +13,7 @@ Also, there is a menu to select these cameras individually or all of them to pla
 - Connect up to 4 IP/Foscam Cameras
 - Supports credentials for Foscam, but you can overwrite the URL manually to support non-Foscam cameras, or the C model which has RTSP port hard coded to 554.
 - Watch in multiple streaming formats, with camera controls displayed overtop of a single camera view.
-- Preview cameras while watching content, with Motion and Sound Detection, or by calling it manually using RunScript()
+- Preview cameras while watching content, with Motion and Sound Detection, or by calling it manually using RunPlugin()
 - Open the camera stream from a preview, and will resume what you were watching when you close the stream.
 - Logic to determine when preview is allowed to display. Configure which windows not to display for.
 - Set a home location to move PTZ enabled Foscam cameras to when Kodi starts

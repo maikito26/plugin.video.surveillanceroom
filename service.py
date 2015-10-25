@@ -95,6 +95,7 @@ class CameraPreviewThread(threading.Thread):
         dur_script = settings.getSetting_int('dur_script', camera_number)
         p_service = settings.getSetting_int('p_service', camera_number)
         p_script = settings.getSetting_int('p_script', camera_number)
+        p_scripttoggle = settings.getSetting_int('p_scripttoggle', camera_number)
         motion_enabled, sound_enabled = settings.getEnabledAlarms(camera_number)
         trigger_interval = settings.getTriggerInterval(camera_number, self.camera_settings, motion_enabled, sound_enabled)
             
@@ -244,12 +245,18 @@ class CameraPreviewThread(threading.Thread):
                     break
                 
                 window_opened = monitor.preview_window_opened(camera_number)
-                if window_opened and durationTime > 0:
-                    # Duration check on opened windows.
-                    
-                    if durationTime < time.time() and not alarmActive:     
-                        previewWindow.stop()
-                        #Don't break, because we still want the interval
+
+                if window_opened:
+                    #Skip if duration is set as 0, since we aren't checking duration
+                    if durationTime > 0:
+                        # Duration check on opened windows.
+                        if durationTime < time.time() and not alarmActive:     
+                            previewWindow.stop()
+                            #Don't break, because we still want the interval
+
+                elif p_scripttoggle == 1:
+                    # Toggles Preview open/closed if called multiple times from script - if set in settings
+                    previewWindow.close()
 
                 monitor.waitForAbort(.5)        
                 x += 1

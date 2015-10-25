@@ -293,7 +293,14 @@ if __name__ == "__main__":
     elif action == 'show_preview':
         if settings.enabled_preview(camera_number):
             monitor = monitor.AddonMonitor()
-            monitor.set_script(camera_number)
+            
+            if monitor.script_override(camera_number) and settings.getSetting_int('p_scripttoggle', camera_number) == 1:
+                # Toggles Preview open/closed if called multiple times
+                monitor.set_preview_window_closed(camera_number)
+            
+            else:
+                monitor.set_script(camera_number)
+                
         else:
             utils.notify(utils.translation(32228))
 
