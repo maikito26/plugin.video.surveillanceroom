@@ -7,8 +7,10 @@ Supporting functions that have no dependencies from the main add-on
 """
 
 import xbmc, xbmcaddon, xbmcvfs, xbmcgui
-import os, urllib, requests
+import os, urllib, requests, sys
 import sqlite3 as lite
+import socket
+
 
 __addon__ = xbmcaddon.Addon() 
 __addonid__ = __addon__.getAddonInfo('id')
@@ -17,7 +19,13 @@ __icon__  = __addon__.getAddonInfo('icon').decode("utf-8")
 __path__ = xbmc.translatePath(('special://home/addons/{0}').format(__addonid__)).decode('utf-8')  
 __data_path__ = xbmc.translatePath('special://profile/addon_data/%s' %__addonid__ ).decode('utf-8')
 __log_level__ = int(__addon__.getSetting('log_level'))
-__log_info__ = __addonid__ + ' v' + __version__ + ': ' 
+__log_info__ = __addonid__ + ' v' + __version__ + ': '
+TIMEOUT = int(__addon__.getSetting('request_timeout'))
+socket.setdefaulttimeout(TIMEOUT)
+
+_atleast_python27 = False
+if '2.7.' in sys.version:
+    _atleast_python27 = True
 
 # Makes sure folder path exists
 if not xbmcvfs.exists(__data_path__):
@@ -50,7 +58,7 @@ def log(level=4, value=''):
         xbmc.log(__log_info__ + 'VERBOSE : ' + msg, xbmc.LOGNOTICE)
         
     elif __log_level__ > 2 and level == 4:                            #DEBUG
-        xbmc.log(__log_info__ + 'DEBUG   :  ' + msg, xbmc.LOGNOTICE)
+        xbmc.log(__log_info__ + 'DEBUG   : ' + msg, xbmc.LOGNOTICE)
   
 def cleanup_images():
     """ Final Cleanup of images when Kodi shuts down """
@@ -60,16 +68,14 @@ def cleanup_images():
             xbmcvfs.delete(os.path.join(__data_path__, i))
             log(4, 'CLEANUP IMAGES :: %s' %i)
 
-def remove_leftover_images(filename_scheme):
+def remove_leftover_images(filename_prefix):
     """ Attempts to remove leftover images after player stops """
-    
-    for filename in xbmcvfs.listdir(__data_path__)[1]:
-        if filename_scheme in filename:
-            try:
-                if not 'fanart_camera' in filename:
-                    log(4, 'Removing leftover images: %s' %filename)
-                    xbmcvfs.delete(filename)
-            except: pass
+
+    for i in xbmcvfs.listdir(__data_path__)[1]:
+        if filename_prefix in i:
+            xbmcvfs.delete(os.path.join(__data_path__, i))
+            log(4, 'CLEANUP IMAGES :: %s' %i)
+            
             
 def remove_cached_art(art):
     """ Removes cached art from textures database and cached folder """
@@ -168,6 +174,8 @@ def get_mjpeg_frame(stream, filename):
     line  = ''
     try:
         while not 'length' in line.lower():
+            if '500 - Internal Server Error' in line:
+                return False
             #log(4, 'GETMJPEGFRAME: %s' %line)
             line = stream.readline()
 
@@ -188,4 +196,7 @@ def get_mjpeg_frame(stream, filename):
 
     return True
 
-    
+
+
+
+

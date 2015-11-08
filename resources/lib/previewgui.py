@@ -9,6 +9,11 @@ This module is used to draw and show the preview window
 import xbmc, xbmcaddon, xbmcgui, xbmcvfs
 import os, requests   #, time
 import utils, settings, cameraplayer
+from urllib import urlretrieve
+import threading
+import socket
+TIMEOUT = settings.getSetting_int('request_timeout')
+socket.setdefaulttimeout(TIMEOUT)
 
 __addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
@@ -24,143 +29,130 @@ ACTION_NAV_BACK = 92
 ACTION_STOP = 13
 ACTION_SELECT_ITEM = 7
 
-
+'''
 def ImageWorker(monitor, q):
     """
     Thread worker that receives a window to update the image of continuously until that window is closed
-
-    item:
-        [0] camera_number;  [1]window.control
     """
     
     while not monitor.abortRequested() and not monitor.stopped():
-        
         if not q.empty():
             
             try:
                 item = q.get(block = False)
-        
-                stream_type = settings.getStreamType(2, item[0])
-                url = settings.getStreamUrl(2, item[0], stream_type)
-
+                control = [item[0].img1, item[0].img2]
+                camera = item[1]
+                
+                stream_type = camera.getStreamType(2)
+                url = camera.getStreamUrl(2, stream_type)
+                prefix = 'Preview'
                 utils.log(2, 'Received request for image processing of Camera %s.  Stream Type: %d;  URL: %s' %(item[0], stream_type, url)) 
-                
+
+                return 
                 if stream_type == 0:
-                    frameByMjpeg(item, monitor, url)           #Approx 10-30fps
+                    getImagesMjpeg(camera, url, control, prefix, monitor)             
                 elif stream_type == 1: 
-                    frameBySnapshot(item, monitor, url)        #Approx 2-4fps
+                    getImagesSnapshot(camera, url, control, prefix, monitor)      
                 elif stream_type == 2:
-                    frameByMjpegInterlaced(item, monitor, url) #Approx 5-15fps
+                    getImagesMjpegInterlaced(camera, url, control, prefix, monitor) 
                 
-                utils.remove_leftover_images('preview_%s.' %item[0])
+                utils.remove_leftover_images('%s_%s.' %(prefix, camera.number))
 
             except:
                 pass
 
         monitor.waitForAbort(0.5)
-        
-def frameBySnapshot(item, monitor, url):
-    """ Updates window using snapshots """
-    
-    camera_number = item[0]
-    control = item[1]
-    from urllib import urlretrieve
-    
-    #starttime = time.time()
-    x = 0
-    while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera_number):
-    
-        filename = os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x)
 
+    
+def getImagesSnapshot(camera, url, control, prefix, monitor):
+    """ Update camera position with snapshots """
+    
+    x = 0
+    while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera.number):
+        
         try:
+            filename = os.path.join(_datapath, '%s_%s.%d.jpg') %(prefix, camera.number, x)
             urlretrieve(url, filename)
             
-            if os.path.exists(filename):
-                control.img1.setImage(filename, useCache=False)
-                xbmcvfs.delete(os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x - 1))
-                control.img2.setImage(filename, useCache=False)
+            if os.path.exists(filename): 
+                control[0].setImage(filename, useCache = False)                
+                xbmcvfs.delete(os.path.join(_datapath, '%s_%s.%d.jpg') %(prefix, camera.number, x - 1))
+                control[1].setImage(filename, useCache = False)
                 x += 1
-
+                
         except Exception, e:
-            utils.log(3, 'Camera %s - %s' %(camera_number, str(e)))
-            control.img1.setImage(_error, useCache=False)
+            utils.log(3, 'Camera %s - Error on MJPEG: %s' %(camera.number, e))
+            control[0].setImage(_error, useCache = False)
+            return
 
-    utils.remove_leftover_images('preview_%s.' %camera_number)
-    #fps = (x + 1) / (time.time() - starttime)
-    #print "Preview Camera average FPS is " + str(fps) 
+    utils.remove_leftover_images('%s_%s.' %(prefix, camera.number))
+  
 
-def frameByMjpeg(item, monitor, url):
-    """ Updates window using mjpeg frames """
-    
-    camera_number = item[0]
-    control = item[1]
-
+def getImagesMjpeg(camera, url, control, prefix, monitor):
+    """ Update camera position with mjpeg frames """
+ 
     try:
-        stream = requests.get(url, stream=True).raw
+        stream = requests.get(url, stream = True, timeout = TIMEOUT).raw
         
     except requests.RequestException as e:
         utils.log(3, e)
-        control.img2.setImage(_error, useCache=False)
-        
-    #starttime = time.time()
-    x = 0
-    
-    while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera_number):
+        control[0].setImage(_error, useCache = False)
+        return
 
-        filename = os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x)
-        filename_exists = utils.get_mjpeg_frame(stream, filename)
+    x = 0
+    while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera.number):
         
+        filename = os.path.join(_datapath, '%s_%s.%d.jpg') %(prefix, camera.number, x)
+        filename_exists = utils.get_mjpeg_frame(stream, filename)
+
         if filename_exists:
-            control.img1.setImage(filename, useCache=False)
-            xbmcvfs.delete(os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x - 1))
-            control.img2.setImage(filename, useCache=False)
+            control[0].setImage(filename, useCache = False)
+            control[1].setImage(filename, useCache = False)
+            xbmcvfs.delete(os.path.join(_datapath, '%s_%s.%d.jpg') %(prefix, camera.number, x - 1))
             x += 1
             
         else:
-            utils.log(3, 'Camera %s - Error on Mjpeg' %camera_number)
-            control.img1.setImage(_error, useCache=False)
+            utils.log(3, 'Camera %s - Error on MJPEG' %camera.number)
+            control[0].setImage(_error, useCache = False)
+            return
+            
+    utils.remove_leftover_images('%s_%s.' %(prefix, camera.number))
 
-    utils.remove_leftover_images('preview_%s.' %camera_number)
-    #fps = (x + 1) / (time.time() - starttime)
-    #print "Preview Camera average FPS is " + str(fps)
 
-def frameByMjpegInterlaced(item, monitor, url):
-    """ Updates window using interlaced mjpeg frames """
-    
-    camera_number = item[0]
-    control = item[1]
+def getImagesMjpegInterlace(camera, url, control, prefix, monitor):
+    """ Update camera position with interlaced mjpeg frames """
     
     try:
-        stream = requests.get(url, stream=True).raw
+        stream = requests.get(url, stream = True, timeout = TIMEOUT).raw
         
     except requests.RequestException as e:
         utils.log(3, e)
-        control.img2.setImage(_error, useCache=False)
+        control[0].setImage(_error, useCache = False)
+        return
         
-    #starttime = time.time()
     x = 0
-    
-    while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera_number):
-
-        filename = os.path.join(_datapath, 'preview_%s.%d.jpg') %(camera_number, x)
+    while not monitor.abortRequested() and not monitor.stopped() and monitor.preview_window_opened(camera.number):
+        
+        filename = os.path.join(_datapath, '%s_%s.%d.jpg') %(prefix, camera.number, x)
         filename_exists = utils.get_mjpeg_frame(stream, filename)
 
-                
         if filename_exists:
             if x % 2 == 0:  #Interlacing for flicker reduction/elimination
-                control.img1.setImage(filename, useCache=False)
+                control[0].setImage(filename, useCache = False)
             else:
-                control.img2.setImage(filename, useCache=False)
-            xbmcvfs.delete(os.path.join(_datapath, 'preview_%s.%d.jpg') %(i, x - 2))
+                control[1].setImage(filename, useCache = False)
+            xbmcvfs.delete(os.path.join(_datapath, '%s_%s.%d.jpg') %(prefix, camera.number, x - 2))
             x += 1
             
         else:
-            utils.log(3, 'Camera %s - Error on Mjpeg' %camera_number)
-            control.img2.setImage(_error, useCache=False)
-                              
-    utils.remove_leftover_images('preview_%s.' %camera_number)
-    #fps = (x + 1) / (time.time() - starttime)
-    #print "Preview Camera average FPS is " + str(fps)
+            utils.log(3, 'Camera %s - Error on MJPEG' %camera.number)
+            control[0].setImage(_error, useCache = False)
+            return
+
+    utils.remove_leftover_images('%s_%s.' %(prefix, camera.number))
+    '''
+    
+
 
 class Button(xbmcgui.ControlButton):
     """ Class reclasses the ControlButton class for use in this addon. """
@@ -181,19 +173,18 @@ class Button(xbmcgui.ControlButton):
 class CameraPreviewWindow(xbmcgui.WindowDialog):
     """ Class is used to create the picture-in-picture window of the camera view """
     
-    def __init__(self, camera_settings, monitor):
+    def __init__(self, camera, monitor):
         self.monitor = monitor
-        self.camera_settings = camera_settings
-        self.camera_number = self.camera_settings[0]
-        self.monitor.set_preview_window_closed(self.camera_number)
-
+        self.camera = camera
+        self.monitor.set_preview_window_closed(self.camera.number)
+        self.prefix = 'Preview'
         self.buttons = []
         
         # Positioning of the window       
         WIDTH = 320
         HEIGHT = 180
         
-        scaling = settings.getSetting_float('scaling', self.camera_number)
+        scaling = settings.getSetting_float('scaling', self.camera.number)
         
         width = int(float(WIDTH * scaling))
         height = int(float(HEIGHT * scaling))
@@ -201,7 +192,7 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         button_scaling = 0.5 * scaling
         button_width = int(round(Button.WIDTH * button_scaling))
         
-        position = settings.getSetting('position', self.camera_number).lower()
+        position = settings.getSetting('position', self.camera.number).lower()
         if 'bottom' in position:
             y = 720 - height
         else:
@@ -234,25 +225,42 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
            
         self.setProperty('zorder', "99")
          
-    def start(self):
-        self.monitor.set_preview_window_opened(self.camera_number)
-        self.show()
+    def start(self, url = None):
+        self.monitor.set_preview_window_opened(self.camera.number)
+        
+        if url == None:
+            stream_type = self.camera.getStreamType(2)
+            url = self.camera.getStreamUrl(2, stream_type)
+        else:
+            stream_type = 0 # Needs to be determined somehow
 
+        if stream_type == 0:
+            t = threading.Thread(target = self.getImagesMjpeg, args = (url,))         
+        elif stream_type == 1:
+            t = threading.Thread(target = self.getImagesSnapshot, args = (url,)) 
+        elif stream_type == 2:
+            t = threading.Thread(target = self.getImagesMjpegInterlaced, args = (url,))
+
+        t.daemon = True 
+        t.start()
+
+        self.show()
+        
+        
     def stop(self):
-        self.monitor.set_preview_window_closed(self.camera_number)
+        self.monitor.set_preview_window_closed(self.camera.number)
         self.monitor.waitForAbort(.2)
         self.close()
+        utils.remove_leftover_images('%s_%s.' %(self.prefix, self.camera.number))
 
     def onControl(self, control):
         if control == self.close_button:
-            self.monitor.set_preview_window_dismissed(self.camera_number)
-            utils.log(4, 'Camera %s:  Action: Stop Button Pressed' %self.camera_number)
+            self.monitor.set_preview_window_dismissed(self.camera.number)
             self.stop()
             
     def onAction(self, action):
         if action in (ACTION_PREVIOUS_MENU, ACTION_BACKSPACE, ACTION_NAV_BACK):
-            self.monitor.set_preview_window_dismissed(self.camera_number)
-            utils.log(4, 'Camera %s:  KeyPress: ' %action)
+            self.monitor.set_preview_window_dismissed(self.camera.number)
             self.stop()
             
         elif action == ACTION_SELECT_ITEM:
@@ -260,7 +268,88 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
             
     def run(self):
         self.stop()
-        cameraplayer.play(self.camera_number, self.monitor)
+        cameraplayer.play(self.camera.number, self.monitor)
+
+
+    def getImagesMjpeg(self, url):
+        """ Update camera position with mjpeg frames """
+     
+        try:
+            stream = requests.get(url, stream = True, timeout = TIMEOUT).raw
+            
+        except requests.RequestException as e:
+            utils.log(3, e)
+            self.img1.setImage(_error, useCache = False)
+            return
+
+        x = 0
+        while not self.monitor.abortRequested() and not self.monitor.stopped() and self.monitor.preview_window_opened(self.camera.number):
+            filename = os.path.join(_datapath, '%s_%s.%d.jpg') %(self.prefix, self.camera.number, x)
+            filename_exists = utils.get_mjpeg_frame(stream, filename)
+
+            if filename_exists:
+                self.img1.setImage(filename, useCache = False)
+                self.img2.setImage(filename, useCache = False)
+                xbmcvfs.delete(os.path.join(_datapath, '%s_%s.%d.jpg') %(self.prefix, self.camera.number, x - 1))
+                x += 1
+                
+            else:
+                utils.log(3, 'Camera %s - Error on MJPEG' %self.camera.number)
+                self.img1.setImage(_error, useCache = False)
+                return
+
+
+    def getImagesSnapshot(self, url, *args, **kwargs):
+        """ Update camera position with snapshots """
+        
+        x = 0
+        while not self.monitor.abortRequested() and not self.monitor.stopped() and self.monitor.preview_window_opened(self.camera.number):
+            
+            try:
+                filename = os.path.join(_datapath, '%s_%s.%d.jpg') %(self.prefix, self.camera.number, x)
+                urlretrieve(url, filename)
+                
+                if os.path.exists(filename): 
+                    self.img1.setImage(filename, useCache = False)                
+                    xbmcvfs.delete(os.path.join(_datapath, '%s_%s.%d.jpg') %(self.prefix, self.camera.number, x - 1))
+                    self.img2.setImage(filename, useCache = False)
+                    x += 1
+                    
+            except Exception, e:
+                utils.log(3, 'Camera %s - Error on Snapshot: %s' %(self.camera.number, e))
+                self.img1.setImage(_error, useCache = False)
+                return
+
+
+    def getImagesMjpegInterlace(self, url, *args, **kwargs):
+        """ Update camera position with interlaced mjpeg frames """
+        
+        try:
+            stream = requests.get(url, stream = True, timeout = TIMEOUT).raw
+            
+        except requests.RequestException as e:
+            utils.log(3, e)
+            self.img1.setImage(_error, useCache = False)
+            return
+            
+        x = 0
+        while not self.monitor.abortRequested() and not self.monitor.stopped() and self.monitor.preview_window_opened(self.camera.number):
+            
+            filename = os.path.join(_datapath, '%s_%s.%d.jpg') %(self.prefix, self.camera.number, x)
+            filename_exists = utils.get_mjpeg_frame(stream, filename)
+
+            if filename_exists:
+                if x % 2 == 0:  #Interlacing for flicker reduction/elimination
+                    self.img1.setImage(filename, useCache = False)
+                else:
+                    self.img2.setImage(filename, useCache = False)
+                xbmcvfs.delete(os.path.join(_datapath, '%s_%s.%d.jpg') %(self.prefix, self.camera.number, x - 2))
+                x += 1
+                
+            else:
+                utils.log(3, 'Camera %s - Error on MJPEG' %self.camera.number)
+                self.img1.setImage(_error, useCache = False)
+                return
 
         
 if __name__ == "__main__":

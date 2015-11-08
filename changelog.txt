@@ -1,3 +1,29 @@
+v1.1.0 (Nov 06 2015)
+--------------------
+- Initial Foscam SD Support.  Core functions covered but waiting on official SDK approval from Foscam to make sure I can properly implement the features.  
+- Revamped Camera API system so add-on can be made to support more camera types if the API is known
+- Support for Python 2.6 builds of Kodi fixed
+- Added in a feature setting to Toggle Preview Window Open or Closed using the same command (useful if mapped to a button)
+- Altered Trigger Interval setting to original way as a camera with continued alarm detection could close then reopen instead of continuing to stay open until the alarm condition cleared
+- PTZ Sensitivity is now set individually by camera
+- Improvements made to error handling and detection when acquiring images
+- Added a Timeout setting for HTTP requests so if one camera goes offline, it doesn't slow down the Add-on responsiveness when accessing the menu.  Also errors out faster if images can't be acquired.
+- Fixed Dismissing previews so all previews are dismissed properly if that is how it is configured in settings (previously only affected interval)
+- Collapsed image updating for previews into the preview window class
+
+Foscam SD Current Feature Support
+- All playback methods including Previews
+- Motion and sound detection work, but must be configured on the Camera's web interface
+- Pan and Tilt Controls
+- Mirror and Flip
+- Reboot
+
+Foscam SD Features not yet Supported (Pending SDK Approval and Delivery from Foscam)
+- All Configurations from within the Add-on (Camera Settings)
+- Presets and Home Location
+- IR LED Settings
+
+
 v1.0.7 (Oct 24 2015)
 --------------------
 New Features: 

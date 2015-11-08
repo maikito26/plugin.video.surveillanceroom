@@ -7,68 +7,15 @@ Service loop which enables preview window capability
 """
 
 import xbmc, xbmcaddon, xbmcvfs
-import threading, time, os, Queue
-from resources.lib import foscam2, monitor, previewgui, settings, utils
+import threading, time, os, Queue, sys
+from resources.lib import monitor, previewgui, settings, utils
+from resources.lib.ipcam_api_wrapper import CameraAPIWrapper as Camera
 
 __addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
 
         
-def alarmStateHealthCheck(camera_settings, motion_enabled, sound_enabled):
-    """ Function to determine state of alarms on cameras, and also connectivity health of camera """
-
-    # Non-alarm enabled or Generic IP Cameras return this
-    if not motion_enabled and not sound_enabled:
-        return False
-    
-    alarmActive = False
-    
-    with foscam2.FoscamCamera(camera_settings, verbose=False) as camera:
-        success_code, alarmActive, alarm = camera.is_alarm_active(motion_enabled, sound_enabled)
-
-
-        ### Health Check code for Foscam Camera ###
-        if success_code != 0:       
-
-            #Timeout is 30 seconds before determining camera is not connected  
-            for x in range(1,3):
-                
-                utils.log(2, 'SERVICE  :: Camera %s did not give response 0, gave response %d.  Retry # %d in 5 seconds' %(camera_settings[0], success_code, x))
-                monitor.waitForAbort(5)
-                success_code, alarmActive, alarm = camera.is_alarm_active(motion_enabled, sound_enabled)      
-
-                if success_code == 0:  
-                    break
-
-            #Camera is not connected, so notify the user
-            if success_code != 0:
-                
-                settings.notify(utils.translation(32222) %camera_settings[0])
-                monitor.cache_set_test_result(camera_settings[0], success_code)
-
-                #Loop to keep retrying the connection ever 60 seconds
-                while success_code != 0 and not monitor.abortRequested():
-                    
-                    utils.log(3, 'SERVICE  :: Camera %s did not give response 0, gave response %d.  60 seconds for next retry. ' %(camera_settings[0], success_code))
-                    monitor.waitForAbort(60)    
-                    success_code, alarmActive, alarm = camera.is_alarm_active(motion_enabled, sound_enabled)
-
-                settings.notify(utils.translation(32223) %camera_settings[0])
-                monitor.cache_set_test_result(camera_settings[0], success_code)
-                
-                #Reset PTZ Camera on Service Start
-                settings.resetLocation(camera_settings[0])
-                
-        ### End of Health Check code for Foscam HD camera ###
-
-
-    if alarmActive:
-        camera_number = camera_settings[0]
-        utils.log(2, 'SERVICE  :: Camera {0} - Alarm is active. ({1}ed).'.format(camera_number, alarm))
-                          
-    return alarmActive
-
-               
+              
 class CameraPreviewThread(threading.Thread):
     """
     This class is a stoppable thread.  It controls the entire process for a single camera.
@@ -76,31 +23,29 @@ class CameraPreviewThread(threading.Thread):
     worker thread to update it's image
     """
     
-    def __init__(self, camera_settings):
+    def __init__(self, camera):
         super(CameraPreviewThread, self).__init__()
         self._stop = False
-        self.camera_settings = camera_settings
+        self.camera = camera
         
     def run(self):
         """ This runs the main loop for the camera """
-        
-        camera_number = self.camera_settings[0]
 
         #Reset PTZ Camera on Service Start
-        settings.resetLocation(camera_number)
+        self.camera.resetLocation()
 
         # Settings
-        check_interval = settings.getSetting_int('interval', camera_number)
-        dur_service = settings.getSetting_int('dur_service', camera_number)
-        dur_script = settings.getSetting_int('dur_script', camera_number)
-        p_service = settings.getSetting_int('p_service', camera_number)
-        p_script = settings.getSetting_int('p_script', camera_number)
-        p_scripttoggle = settings.getSetting_int('p_scripttoggle', camera_number)
-        motion_enabled, sound_enabled = settings.getEnabledAlarms(camera_number)
-        trigger_interval = settings.getTriggerInterval(camera_number, self.camera_settings, motion_enabled, sound_enabled)
+        check_interval = settings.getSetting_int('interval', self.camera.number)
+        dur_service = settings.getSetting_int('dur_service', self.camera.number)
+        dur_script = settings.getSetting_int('dur_script', self.camera.number)
+        p_service = settings.getSetting_int('p_service', self.camera.number)
+        p_script = settings.getSetting_int('p_script', self.camera.number)
+        p_scripttoggle = settings.getSetting_int('p_scripttoggle', self.camera.number)
+        self.motion_enabled, self.sound_enabled = settings.getEnabledAlarms(self.camera.number)
+        trigger_interval = self.camera.getTriggerInterval(self.motion_enabled, self.sound_enabled)
             
         # Creates the Window to be used until Service is stopped       
-        previewWindow = previewgui.CameraPreviewWindow(self.camera_settings, monitor)
+        self.previewWindow = previewgui.CameraPreviewWindow(self.camera, monitor)
 
         ### MAIN LOOP ###
         
@@ -108,10 +53,10 @@ class CameraPreviewThread(threading.Thread):
         
         while not monitor.abortRequested() and not self.stopped():
 
-            manual_override = monitor.script_override(camera_number)
+            manual_override = monitor.script_override(self.camera.number)
             alarmActive = False
 
-            if monitor.preview_not_open_allowed(camera_number):
+            if monitor.preview_not_open_allowed(self.camera.number):
                 '''
                 PREVIEW WINDOW IS CURRENTLY CLOSED
                 This decision is used to determine how and when the window will be opened.
@@ -119,7 +64,7 @@ class CameraPreviewThread(threading.Thread):
 
                 if not manual_override:
                     #If Script was called, we don't care about the alarm state  
-                    alarmActive = alarmStateHealthCheck(self.camera_settings, motion_enabled, sound_enabled)
+                    alarmActive = self.alarmStateHealthCheck()
                     
                 
                 if alarmActive or manual_override:
@@ -135,16 +80,16 @@ class CameraPreviewThread(threading.Thread):
                         durationTime = time.time() + dur_script
 
                     
-                    if not monitor.preview_window_opened(camera_number):
+                    if not monitor.preview_window_opened(self.camera.number):
                         #Only open the window if it's not already open
-                        utils.log(2, 'SERVICE  :: Camera %s - Preview window is opening' %camera_number)
-                        q.put([camera_number, previewWindow])    
-                        previewWindow.start()
+                        utils.log(2, 'SERVICE  :: Camera %s - Preview window is opening' %self.camera.number)
+                        #q.put([self.previewWindow, self.camera])    
+                        self.previewWindow.start()
                     
 
                             
             
-            elif monitor.preview_window_opened(camera_number):
+            elif monitor.preview_window_opened(self.camera.number):
                 '''
                 PREVIEW WINDOW IS OPEN
                 This decision is used to determine how and when the window will be closed.
@@ -157,17 +102,17 @@ class CameraPreviewThread(threading.Thread):
                     - Manual
                     '''
                     
-                    alarmActive = alarmStateHealthCheck(self.camera_settings, motion_enabled, sound_enabled)
+                    alarmActive = self.alarmStateHealthCheck()
                     
                     if not alarmActive:
                         #Alarm is not active, so check if duration is exceeded
                         
                         if durationTime < time.time():
-                            previewWindow.stop()
-                            utils.log(2, 'SERVICE  :: Camera %s - The alarm is no longer detected.  The preview window will close.' %camera_number)   
+                            self.previewWindow.stop()
+                            utils.log(2, 'SERVICE  :: Camera %s - The alarm is no longer detected.  The preview window will close.' %self.camera.number)   
 
                         else:
-                            utils.log(2, 'SERVICE  :: Camera %s - Preview window is expected to close in %d seconds.' %(camera_number, (1 - (time.time() - durationTime))))
+                            utils.log(2, 'SERVICE  :: Camera %s - Preview window is expected to close in %d seconds.' %(self.camera.number, (1 - (time.time() - durationTime))))
 
                     
                     else:
@@ -190,11 +135,11 @@ class CameraPreviewThread(threading.Thread):
                     alarmActive = False
 
                     if durationTime < time.time():
-                        previewWindow.stop()
-                        utils.log(2, 'SERVICE  :: Camera %s - The alarm is no longer detected.  The preview window will close.' %camera_number)   
+                        self.previewWindow.stop()
+                        utils.log(2, 'SERVICE  :: Camera %s - The alarm is no longer detected.  The preview window will close.' %self.camera.number)   
 
                     else:
-                        utils.log(2, 'SERVICE  :: Camera %s - Preview window is expected to close in %d seconds.' %(camera_number, (1 - (time.time() - durationTime))))
+                        utils.log(2, 'SERVICE  :: Camera %s - Preview window is expected to close in %d seconds.' %(self.camera.number, (1 - (time.time() - durationTime))))
 
 
                
@@ -210,11 +155,11 @@ class CameraPreviewThread(threading.Thread):
 
                     if (not manual_override and p_service == 3): 
                         
-                        alarmActive = alarmStateHealthCheck(self.camera_settings, motion_enabled, sound_enabled)
+                        alarmActive = self.alarmStateHealthCheck()
                           
                         if not alarmActive:  
-                            previewWindow.stop()
-                            utils.log(2, 'SERVICE  :: Camera %s - The alarm is no longer detected.  The preview window will close.' %camera_number)
+                            self.previewWindow.stop()
+                            utils.log(2, 'SERVICE  :: Camera %s - The alarm is no longer detected.  The preview window will close.' %self.camera.number)
 
 
 
@@ -222,7 +167,7 @@ class CameraPreviewThread(threading.Thread):
             if not alarmActive:
                 sleep = check_interval              
             else:
-                sleep = trigger_interval
+                sleep = trigger_interval - 1
 
             x = 1
             sleep = sleep * 2
@@ -238,44 +183,100 @@ class CameraPreviewThread(threading.Thread):
 
                 Other Actions:
                 - Window is open, alarm is not active, and duration is exceeded; Close Window
+                - External Request to Close Window Occurs
                 '''
                 
-                if not manual_override and monitor.script_override(camera_number):
+                if monitor.requested_to_close_window(self.camera.number):
+                    self.previewWindow.close()
+                    
+                if not manual_override and monitor.script_override(self.camera.number):
                     # If script wasn't called, and now it is so exit so it can be opened.
                     break
                 
-                window_opened = monitor.preview_window_opened(camera_number)
+                window_opened = monitor.preview_window_opened(self.camera.number)
 
                 if window_opened:
                     #Skip if duration is set as 0, since we aren't checking duration
                     if durationTime > 0:
                         # Duration check on opened windows.
                         if durationTime < time.time() and not alarmActive:     
-                            previewWindow.stop()
+                            self.previewWindow.stop()
                             #Don't break, because we still want the interval
 
                 elif p_scripttoggle == 1:
                     # Toggles Preview open/closed if called multiple times from script - if set in settings
-                    previewWindow.close()
+                    self.previewWindow.close()
 
                 monitor.waitForAbort(.5)        
                 x += 1
 
         ### /MAIN LOOP ###
   
-        if monitor.preview_window_opened(camera_number):
-            previewWindow.stop()
-            del previewWindow
+        if monitor.preview_window_opened(self.camera.number):
+            self.previewWindow.stop()
+            del self.previewWindow
      
-        utils.log(1, 'SERVICE  :: **SHUTDOWN** Camera %s - Stopped.' %camera_number)
+        utils.log(1, 'SERVICE  :: **SHUTDOWN** Camera %s - Stopped.' %self.camera.number)
         
 
+    def alarmStateHealthCheck(self):
+        """ Function to determine state of alarms on cameras, and also connectivity health of camera """
+
+        # Non-alarm enabled or Generic IP Cameras return this
+        if not self.motion_enabled and not self.sound_enabled:
+            return False
+        
+        alarmActive = False  
+        success_code, alarmActive, alarm = self.camera.is_alarm_active(self.motion_enabled, self.sound_enabled)
+
+        ### Health Check code for Foscam Camera ###
+        if success_code != 0:       
+
+            #Timeout is ~20 seconds before determining camera is not connected  
+            for x in range(1,2):
+                
+                utils.log(2, 'SERVICE  :: Camera %s did not give response 0, gave response %d.  Retry # %d in 5 seconds' %(self.camera.number, success_code, x))
+                monitor.waitForAbort(5)
+                success_code, alarmActive, alarm = self.camera.is_alarm_active(self.motion_enabled, self.sound_enabled)      
+
+                if success_code == 0:  
+                    break
+
+            #Camera is not connected, so notify the user
+            if success_code != 0:
+
+                self.previewWindow.close()
+                utils.notify(utils.translation(32222) %self.camera.number)   
+                monitor.cache_set_test_result(self.camera.number, success_code)
+
+                #Loop to keep retrying the connection ever 60 seconds
+                while success_code != 0 and not monitor.abortRequested():
+                    
+                    utils.log(3, 'SERVICE  :: Camera %s did not give response 0, gave response %d.  60 seconds for next retry. ' %(self.camera.number, success_code))
+                    monitor.waitForAbort(60)    
+                    success_code, alarmActive, alarm = self.camera.is_alarm_active(self.motion_enabled, self.sound_enabled)
+
+                utils.notify(utils.translation(32223) %self.camera.number)
+                monitor.cache_set_test_result(self.camera.number, success_code)
+                
+                #Reset PTZ Camera on Service Start
+                self.camera.resetLocation()
+                    
+            ### End of Health Check code for Foscam HD camera ###
+
+
+        if alarmActive:
+            utils.log(2, 'SERVICE  :: Camera {0} - Alarm is active. ({1}ed).'.format(self.camera.number, alarm))
+                              
+        return alarmActive
+    
+                                           
     def stop(self):
         self._stop = True
 
     def stopped(self):
         return self._stop
-                                       
+
 
                                        
 class service():
@@ -292,20 +293,19 @@ class service():
         
         for camera_number in "1234":
 
-            utils.log(2, 'SERVICE  :: Camera %s;  Enabled: %s' %(camera_number, settings.enabled_camera(camera_number)))
+            utils.log(2, 'SERVICE  :: Camera %s;  Enabled: %s;  Preview Enabled: %s' %(camera_number, settings.enabled_camera(camera_number), settings.enabled_preview(camera_number)))
             if settings.enabled_camera(camera_number):
-                camera_settings = settings.getBasicSettings(camera_number, monitor, useCache=False)
+                camera = Camera(camera_number)
 
-                utils.log(2, 'SERVICE  :: Camera %s;  Preview Enabled: %s;  Settings: %s' %(camera_number, settings.enabled_preview(camera_number), camera_settings))
                 if settings.enabled_preview(camera_number):
                     
-                    if camera_settings :
+                    if camera.Connected(monitor, useCache=False):
 
-                        wt = threading.Thread(target = previewgui.ImageWorker, args = (monitor, q))                  
-                        wt.daemon = True         
-                        wt.start()
+                        #wt = threading.Thread(target = previewgui.ImageWorker, args = (monitor, q))                  
+                        #wt.daemon = True         
+                        #wt.start()
 
-                        t = CameraPreviewThread(camera_settings)
+                        t = CameraPreviewThread(camera)
                         t.daemon = True 
                         self.threads.append(t)
                         t.start()
@@ -314,6 +314,7 @@ class service():
 
                     else:
                         utils.log(1, 'SERVICE  :: Preview for Camera %s did not start because it is not properly configured.' %camera_number)
+                        utils.notify('Error Connecting to Camera %s.' %camera_number)
                 
         utils.notify(utils.translation(32224))  #Service Started
         
@@ -338,8 +339,8 @@ class service():
         monitor.waitForAbort(3)
         new_instance = self.instance + 1
                                        
-        with q.mutex:
-            q.queue.clear()
+        #with q.mutex:
+        #    q.queue.clear()
                                        
         start(new_instance)
 
@@ -359,12 +360,13 @@ def start(new_instance = 0):
     settings.refreshAddonSettings()
     utils.log(1, 'SERVICE  :: **START** Instance %d - Starting a new service instance.' %new_instance)
     utils.log(1, 'SERVICE  :: Log Level: %s' %utils.__log_level__)
+    utils.log(1, 'SERVICE  :: Python Version: %s;  At Least 2.7: %s' %(sys.version, utils._atleast_python27))
     instance = service()
     instance.run(new_instance) 
 
 
 if __name__ == "__main__":
-    q = Queue.Queue(maxsize=0)
+    #q = Queue.Queue(maxsize=0)
                                                
     monitor = monitor.AddonMonitor()
     start()

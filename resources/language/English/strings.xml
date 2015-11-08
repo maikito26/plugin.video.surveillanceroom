@@ -26,10 +26,10 @@
   <string id="32023">Log Level</string> 
   <string id="32024">Notifications On</string> 
   <string id="32025">Hack - Attempt to improve player control response</string>  
-  <string id="32026"></string> 
+  <string id="32026">Timeout on Requests</string> 
   <string id="32027">All Cameras</string> 
   <string id="32028">Add-on Settings</string>   
-  <string id="32029">Advanced</string>
+  <string id="32029">Advanced Menu</string>
   <string id="32030">Always</string> 
   <string id="32031">Manually</string>  
   <string id="32032">Off</string> 
@@ -66,8 +66,8 @@
   <string id="32063"></string>
   <string id="32064"></string>
   <string id="32065">Foscam HD</string>
-  <string id="32066">Foscam HD - Override</string>
-  <string id="32067">Foscam 189xx (Future Support)</string>
+  <string id="32066">Foscam SD</string>
+  <string id="32067">Foscam HD - Override (for C1)</string>
   <string id="32068">Generic IP Camera</string>
   <string id="32069"></string>
   <string id="32070"></string>

@@ -6,11 +6,13 @@ A Kodi add-on by Maikito26
 This module is to exploit Foscam HD Cameras, ie FI9821W/P/HD816W/P.
 """
 
-import urllib
+import urllib, sys
 import xml.etree.ElementTree as ET
 from threading import Thread
-import utils
-
+import utils, settings
+import socket
+socket.setdefaulttimeout(settings.getSetting_int('request_timeout'))
+                         
 # Foscam error code.
 FOSCAM_SUCCESS           = 0
 ERROR_FOSCAM_FORMAT      = -1
@@ -32,7 +34,7 @@ class FoscamError(Exception):
 class FoscamCamera(object):
     '''A python implementation of the foscam HD816W'''
 
-    def __init__(self, camera_settings, daemon=False, verbose=True):
+    def __init__(self, camera_settings, daemon = False, verbose = True):
         '''
         If ``daemon`` is True, the command will be sent unblockedly.
         '''
@@ -74,6 +76,7 @@ class FoscamCamera(object):
     
     def __exit__(self, exc_type, exc_value, traceback):		
 	return None
+    
 		
     def send_command(self, cmd, params=None):
         '''
@@ -104,12 +107,22 @@ class FoscamCamera(object):
             return ERROR_FOSCAM_UNAVAILABLE, None
         code = ERROR_FOSCAM_UNKNOWN
         params = dict()
-        for child in root.iter():
-            if child.tag == 'result':
-                code = int(child.text)
+        
+        if utils._atleast_python27:      #Check added for compatibility with Mac/python2.6 kodi builds
+            for child in root.iter():
+                if child.tag == 'result':
+                    code = int(child.text)
 
-            elif child.tag != 'CGI_Result':
-                params[child.tag] = child.text
+                elif child.tag != 'CGI_Result':
+                    params[child.tag] = child.text
+
+        else:
+            for child in root.getiterator():
+                if child.tag == 'result':
+                    code = int(child.text)
+
+                elif child.tag != 'CGI_Result':
+                    params[child.tag] = child.text
 
         if self.verbose:
             utils.log(4, 'Received Foscam response: %s, %s' % (code, params))
@@ -132,6 +145,117 @@ class FoscamCamera(object):
             t.start()
         else:
             return execute_with_callbacks(cmd, params, callback)
+
+        
+    # *************** Device manager *******************
+    def get_dev_state(self, callback=None):
+        '''
+        Get all device state
+        cmd: getDevState
+        return args:
+            ......
+            IOAlarm      0   Disabled;  1 No Alarm;  2 Detect Alarm
+            motionDetectAlarm    0   Disabled;  1 No Alarm;  2 Detect Alarm
+            soundAlarm   0   Disabled;  1 No Alarm;  2 Detect Alarm
+            record:      0   Not in recording; 1 Recording
+            sdState:     0   No sd card; 1 Sd card OK; 2 SD card read only
+            sdFreeSpace: Free space of sd card by unit of k
+            sdTotalSpace: Total space of sd card by unit of k
+            infraLedState    0  OFF;  1  ON
+            ......
+        '''
+        return self.execute_command('getDevState', callback=callback)
+
+    def reboot(self, callback=None):
+
+        return self.execute_command('rebootSystem', callback=callback)
+
+    def set_system_time(self, time_source, ntp_server, date_format,
+                        time_format, time_zone, is_dst, dst, year,
+                        mon, day, hour, minute, sec, callback=None):
+        '''
+        Set systeim time
+        '''
+        if ntp_server not in ['time.nist.gov',
+                              'time.kriss.re.kr',
+                              'time.windows.com',
+                              'time.nuri.net',
+                             ]:
+            raise ValueError('Unsupported ntpServer')
+
+        params = {'timeSource': time_source,
+                  'ntpServer' : ntp_server,
+                  'dateFormat': date_format,
+                  'timeFormat': time_format,
+                  'timeZone'  : time_zone,
+                  'isDst'     : is_dst,
+                  'dst'       : dst,
+                  'year'      : year,
+                  'mon'       : mon,
+                  'day'       : day,
+                  'hour'      : hour,
+                  'minute'    : minute,
+                  'sec'       : sec
+                 }
+
+        return self.execute_command('setSystemTime', params, callback=callback)
+
+    def get_system_time(self, callback=None):
+        '''
+        Get system time.
+        '''
+        return self.execute_command('getSystemTime', callback=callback)
+
+    def get_dev_name(self, callback=None):
+        '''
+        Get camera name.
+        '''
+        return self.execute_command('getDevName', callback=callback)
+
+    def set_dev_name(self, devname, callback=None):
+        '''
+        Set camera name
+        '''
+        params = {'devName': devname.encode('gbk')}
+        return self.execute_command('setDevName', params, callback=callback)
+
+    def set_pwr_freq(self, mode, callback=None):
+        '''
+        Set power frequency of sensor
+        mode:
+            0  60HZ
+            1  50Hz
+            2  Outdoor
+        '''
+        params = {'freq': mode}
+        return self.execute_command('setPwrFreq', params, callback=callback)
+
+
+    def get_osd_setting(self, callback=None):
+        '''
+        Gets the OSD setting
+            ......
+            isEnableTimeStamp:  Time stamp will display on screen or not
+            isEnableDevName:    Camera name will display on screen or not
+            dispPos:            OSD display position, currently can only be 0
+            isEnableOSDMask:    Is OSD mask effective
+            ......
+        '''
+        return self.execute_command('getOSDSetting ', callback=callback)
+
+    def set_osd_setting(self, params, callback=None):
+        '''
+        Sets the OSD setting  -- CURRENTLY NOT FUNCTIONAL AS A PYTHON FUNCTION UNTIL PARAMETERS ARE SET
+            ......
+            isEnableTimeStamp:  Time stamp will display on screen or not
+            isEnableDevName:    Camera name will display on screen or not
+            dispPos:            OSD display position, currently can only be 0
+            isEnableOSDMask:    Is OSD mask effective
+            ......
+        '''
+        params = {}
+        return self.execute_command('setOSDSetting', params, callback=callback)
+    
 
     def set_ir_on(self, callback=None):
 	'''
@@ -319,114 +443,7 @@ class FoscamCamera(object):
         return self.execute_command('getMirrorAndFlipSetting', None, callback=callback)
 
 
-    # *************** Device manage *******************
 
-    def reboot(self, callback=None):
-
-        return self.execute_command('rebootSystem', callback=callback)
-
-    def set_system_time(self, time_source, ntp_server, date_format,
-                        time_format, time_zone, is_dst, dst, year,
-                        mon, day, hour, minute, sec, callback=None):
-        '''
-        Set systeim time
-        '''
-        if ntp_server not in ['time.nist.gov',
-                              'time.kriss.re.kr',
-                              'time.windows.com',
-                              'time.nuri.net',
-                             ]:
-            raise ValueError('Unsupported ntpServer')
-
-        params = {'timeSource': time_source,
-                  'ntpServer' : ntp_server,
-                  'dateFormat': date_format,
-                  'timeFormat': time_format,
-                  'timeZone'  : time_zone,
-                  'isDst'     : is_dst,
-                  'dst'       : dst,
-                  'year'      : year,
-                  'mon'       : mon,
-                  'day'       : day,
-                  'hour'      : hour,
-                  'minute'    : minute,
-                  'sec'       : sec
-                 }
-
-        return self.execute_command('setSystemTime', params, callback=callback)
-
-    def get_system_time(self, callback=None):
-        '''
-        Get system time.
-        '''
-        return self.execute_command('getSystemTime', callback=callback)
-
-    def get_dev_name(self, callback=None):
-        '''
-        Get camera name.
-        '''
-        return self.execute_command('getDevName', callback=callback)
-
-    def set_dev_name(self, devname, callback=None):
-        '''
-        Set camera name
-        '''
-        params = {'devName': devname.encode('gbk')}
-        return self.execute_command('setDevName', params, callback=callback)
-
-    def get_dev_state(self, callback=None):
-        '''
-        Get all device state
-        cmd: getDevState
-        return args:
-            ......
-            IOAlarm      0   Disabled;  1 No Alarm;  2 Detect Alarm
-            motionDetectAlarm    0   Disabled;  1 No Alarm;  2 Detect Alarm
-            soundAlarm   0   Disabled;  1 No Alarm;  2 Detect Alarm
-            record:      0   Not in recording; 1 Recording
-            sdState:     0   No sd card; 1 Sd card OK; 2 SD card read only
-            sdFreeSpace: Free space of sd card by unit of k
-            sdTotalSpace: Total space of sd card by unit of k
-            infraLedState    0  OFF;  1  ON
-            ......
-        '''
-        return self.execute_command('getDevState', callback=callback)
-
-    def set_pwr_freq(self, mode, callback=None):
-        '''
-        Set power frequency of sensor
-        mode:
-            0  60HZ
-            1  50Hz
-        '''
-        params = {'freq': mode}
-        return self.execute_command('setPwrFreq', params, callback=callback)
-
-
-    def get_osd_setting(self, callback=None):
-        '''
-        Gets the OSD setting
-            ......
-            isEnableTimeStamp:  Time stamp will display on screen or not
-            isEnableDevName:    Camera name will display on screen or not
-            dispPos:            OSD display position, currently can only be 0
-            isEnableOSDMask:    Is OSD mask effective
-            ......
-        '''
-        return self.execute_command('getOSDSetting ', callback=callback)
-
-    def set_osd_setting(self, params, callback=None):
-        '''
-        Sets the OSD setting  -- CURRENTLY NOT FUNCTIONAL AS A PYTHON FUNCTION UNTIL PARAMETERS ARE SET
-            ......
-            isEnableTimeStamp:  Time stamp will display on screen or not
-            isEnableDevName:    Camera name will display on screen or not
-            dispPos:            OSD display position, currently can only be 0
-            isEnableOSDMask:    Is OSD mask effective
-            ......
-        '''
-        params = {}
-        return self.execute_command('setOSDSetting', params, callback=callback)
 
 
     # *************** PTZ Control *******************
@@ -785,4 +802,33 @@ class FoscamCamera(object):
 
     
 
-   
+class FoscamCameraOverride(FoscamCamera):
+    def __init__(self, camera_settings, daemon = False, verbose = True):
+        super(FoscamCamera, self).init(camera_settings, daemon = False, verbose = True)
+        self.camera_number = camera_settings[0]
+        #self.host = camera_settings[1]
+        #self.port = camera_settings[2]
+        #self.usr = camera_settings[3]
+        #self.pwd = camera_settings[4]
+        
+    
+    @property
+    def video_url(self):
+        _videoUrl = settings.getSetting('stream_url', self.camera_number)
+        if _videoUrl == '':
+            _videoUrl = "rtsp://{0}:{1}@{2}/videoMain".format(self.usr, self.pwd, self.url)
+        return _videoUrl
+
+    @property
+    def mjpeg_url(self):
+        _mjpegUrl = settings.getSetting('mjpeg_url', self.camera_number)
+        if mjpegUrl == '':
+            _mjpegUrl = "http://{0}/cgi-bin/CGIStream.cgi?cmd={GetMJStream}&usr={1}&pwd={2}&".format(self.url, self.usr, self.pwd)
+        return _mjpegUrl
+
+    @property
+    def snapshot_url(self):
+        _snapshotUrl = settings.getSetting('snapshot_url', self.camera_number)
+        if _snapshotUrl == '':
+            _snapshotUrl = "http://{0}/cgi-bin/CGIProxy.fcgi?cmd={snapPicture2}&usr={1}&pwd={2}&".format(self.url, self.usr, self.pwd)
+        return _snapshotUrl

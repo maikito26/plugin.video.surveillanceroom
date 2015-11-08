@@ -9,6 +9,7 @@ This module is used to draw a window that contains settings relevant to a Foscam
 import xbmc, xbmcgui, xbmcaddon
 import settings, utils
 import os
+from resources.lib.ipcam_api_wrapper import CameraAPIWrapper as Camera
 
 __addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
@@ -133,7 +134,7 @@ class CameraSettingsWindow(xbmcgui.WindowDialog):
     """
     
     def __init__(self, camera_number, title='Camera Settings'):
-        import foscam2
+        
         title = 'Camera Settings'
         
         self.x = 340
@@ -146,8 +147,7 @@ class CameraSettingsWindow(xbmcgui.WindowDialog):
         self.X_SHIFT = 10
         self.LABEL_WIDTH = 240
 
-        self.camera_number = camera_number
-        self.camera = foscam2.FoscamCamera(settings.getBasicSettings(self.camera_number))
+        self.camera = Camera(camera_number)
         
         self.label_enabled = {0: 'Disabled',
                               1: 'Enabled'}
@@ -229,7 +229,7 @@ class CameraSettingsWindow(xbmcgui.WindowDialog):
         self.button_close.controlUp(self.radio_mjpeg)
         
         #Disable unsupported features
-        ptz = settings.getSetting_int('ptz', self.camera_number)
+        ptz = settings.getSetting_int('ptz', self.camera.number)
         if ptz == 0: # Disable Pan & Tilt
             self.label_pt.setEnabled(False)
             self.button_pt_speedup.setEnabled(False)
@@ -242,7 +242,7 @@ class CameraSettingsWindow(xbmcgui.WindowDialog):
             self.button_z_speeddown.setEnabled(False)
             self.label_z_speedsetting.setEnabled(False)
 
-        motion_enabled, sound_enabled = settings.getEnabledAlarms(self.camera_number) 
+        motion_enabled, sound_enabled = settings.getEnabledAlarms(self.camera.number) 
         if not motion_enabled:
             self.label_m.setEnabled(False)
             self.label_ms.setEnabled(False)

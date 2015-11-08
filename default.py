@@ -7,8 +7,8 @@ Main Menu and External Functionality
 
 import sys, os, urllib
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon, xbmcvfs
-from resources.lib import settings, monitor, allcameraplayer, cameraplayer, camerasettings, foscam2
-from resources.lib import utils
+from resources.lib import settings, monitor, allcameraplayer, cameraplayer, camerasettings, utils, previewgui
+from resources.lib.ipcam_api_wrapper import CameraAPIWrapper as Camera
 
 __addon__ = xbmcaddon.Addon() 
 __addonid__ = __addon__.getAddonInfo('id') 
@@ -147,7 +147,6 @@ def advanced_menu():
         
         if settings.enabled_camera(camera_number):
             
-            camera_settings = settings.getBasicSettings(camera_number)
             list_label = settings.getCameraName(camera_number)
             
             # List submenus for each enabled camera
@@ -175,7 +174,7 @@ def advanced_menu():
     
 
 
-def main_menu():                                                
+def main_menu(monitor):                                                
     """ First Level Menu to access main functions """
 
     if settings.atLeastOneCamera():
@@ -190,18 +189,19 @@ def main_menu():
             
             if settings.enabled_camera(camera_number):
                 
-                camera_settings = settings.getBasicSettings(camera_number)
+                camera = Camera(camera_number)
                 list_label = settings.getCameraName(camera_number)
 
-                new_art_url = None
-                if camera_settings:
-                    new_art_url = settings.getNewArt(camera_number)
-                    utils.log(4, 'Get New Fanart Enabled: %s' %new_art_url)
+                new_art_and_url = None
+                if settings.getSetting_int('fanart') == 0 and \
+                   camera.Connected(monitor, False):
+                    new_art_and_url = camera.getSnapShotUrl()
+                    utils.log(4, 'Get New Fanart Enabled: %s' %new_art_and_url)
 
                 # Single Camera Player for enabled cameras
                 addDirectoryItem(name = list_label,
                                  icon = utils.get_icon(camera_number),
-                                 fanart = utils.get_fanart(camera_number, new_art_url),
+                                 fanart = utils.get_fanart(camera_number, new_art_and_url),
                                  parameters = {'action': 'single_camera',
                                                'camera_number': camera_number})
 
@@ -230,12 +230,13 @@ if __name__ == "__main__":
     params = param_to_dict(sys.argv[2])
     action = params.get('action', ' ')
     camera_number = params.get('camera_number', '')
-    utils.log(4, 'Handle: %s;  Params: %s;  action: %s' %(handle, params, action))
+    utils.log(2, 'Handle: %s;  Params: %s;  action: %s' %(handle, params, action))
 
     
     # Main Menu
     if action == ' ':
-        main_menu()
+        monitor = monitor.AddonMonitor()
+        main_menu(monitor)
 
 
     # Settings
@@ -268,12 +269,12 @@ if __name__ == "__main__":
     # Single Camera Stream without Controls   
     elif action == 'single_camera_no_controls': 
         monitor = monitor.AddonMonitor()
-        cameraplayer.play(camera_number, monitor, 3)
+        cameraplayer.play(camera_number, monitor, False)
 
 
     # Reboot Camera  
     elif action == 'reboot':
-        with foscam2.FoscamCamera(settings.getBasicSettings(camera_number)) as camera:
+        with Camera(camera_number) as camera:
             response = camera.reboot()
             if response[0] == 0:
                 utils.dialog_ok(utils.translation(32218))
@@ -326,8 +327,6 @@ if __name__ == "__main__":
     # Update Fanart
     elif action == 'update_fanart':
         new_art_url = settings.getNewArt(camera_number, 0)
-        print camera_number
-        print new_art_url
         utils.get_fanart(camera_number, new_art_url)
         utils.notify(utils.translation(32221))
         xbmc.executebuiltin('Container.Refresh')
@@ -336,3 +335,14 @@ if __name__ == "__main__":
     # Restart Preview Service
     elif action == 'restart_service':
         pass
+
+
+    # Preliminary attempt to show an overlay based on a URL, not fully tested and does not close on its own yet
+    elif action == 'show_preview_custom':
+        url = params.get('url', '')
+        if url != '':
+            monitor = monitor.AddonMonitor()
+            camera = Camera(camera_number)
+            previewWindow = previewgui.CameraPreviewWindow(camera, monitor)
+            previewWindow.start(url)
+        

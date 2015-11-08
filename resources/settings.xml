@@ -17,6 +17,7 @@
 		<setting label="32020" id="fanart" type="enum" lvalues="32030|32031" default="0" />
 		<setting label="32024" id="notifications" type="bool" default="true" />
 		<setting label="32021" id="resume_time" type="slider" default="10" range="0,1,20" option="int" />
+		<setting label="32026" id="request_timeout" type="slider" default="3" range="1,1,15" option="int" />
 		<setting label="32025" id="hack1" type="bool" default="false" />
 		<setting label="32023" id="log_level" type="enum" lvalues="32032|32033|32034|32039" default="0" />
 	</category>
@@ -48,15 +49,16 @@
 			<setting label="32056" id="stream1" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream1" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream1" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url1" type="text" visible="!eq(-8,0)+!eq(-8,2)" subsetting="true" />
-			<setting label="32060" id="stream_url1" type="text" visible="!eq(-9,0)+!eq(-9,2)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url1" type="text" visible="!eq(-10,0)+!eq(-10,2)" subsetting="true" />
+			<setting label="32059" id="snapshot_url1" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
+			<setting label="32060" id="stream_url1" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url1" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz1" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
-			<setting label="32022" id="ptz_sensitivity1" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" subsetting="true" />
-			<setting label="32082" id="conn1" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-14,3)+!eq(-2,0)" subsetting="true" />
-			<setting label="32083" id="alarm1" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-15,3)" />
+			<setting label="32022" id="ptz_hd_sensitivity1" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" visible="!eq(-13,1)" subsetting="true" />
+			<setting label="32022" id="ptz_sd_sensitivity1" type="slider" default="5" range="1,5,20" enable="!eq(-14,3)+!eq(-2,0)" visible="eq(-14,1)" subsetting="true" />
+			<setting label="32082" id="conn1" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-15,3)+!eq(-3,0)" subsetting="true" />
+			<setting label="32083" id="alarm1" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-16,3)" />
 			
 		<setting label="32090" type="lsep" />
 			<setting label="32091" id="motion1" type="bool" default="false" enable="gt(-2,0)" />
@@ -81,15 +83,16 @@
 			<setting label="32056" id="stream2" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream2" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream2" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url2" type="text" visible="!eq(-8,0)+!eq(-8,2)" subsetting="true" />
-			<setting label="32060" id="stream_url2" type="text" visible="!eq(-9,0)+!eq(-9,2)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url2" type="text" visible="!eq(-10,0)+!eq(-10,2)" subsetting="true" />
+			<setting label="32059" id="snapshot_url2" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
+			<setting label="32060" id="stream_url2" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url2" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz2" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
-			<setting label="32022" id="ptz_sensitivity2" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" subsetting="true" />
-			<setting label="32082" id="conn2" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-14,3)+!eq(-2,0)" subsetting="true" />
-			<setting label="32083" id="alarm2" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-15,3)" />
+			<setting label="32022" id="ptz_hd_sensitivity2" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" visible="!eq(-13,1)" subsetting="true" />
+			<setting label="32022" id="ptz_sd_sensitivity2" type="slider" default="5" range="1,5,20" enable="!eq(-14,3)+!eq(-2,0)" visible="eq(-14,1)" subsetting="true" />
+			<setting label="32082" id="conn2" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-15,3)+!eq(-3,0)" subsetting="true" />
+			<setting label="32083" id="alarm2" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-16,3)" />
 			
 		<setting label="32090" type="lsep" />
 			<setting label="32091" id="motion2" type="bool" default="false" enable="gt(-2,0)" />
@@ -114,15 +117,16 @@
 			<setting label="32056" id="stream3" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream3" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream3" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url3" type="text" visible="!eq(-8,0)+!eq(-8,2)" subsetting="true" />
-			<setting label="32060" id="stream_url3" type="text" visible="!eq(-9,0)+!eq(-9,2)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url3" type="text" visible="!eq(-10,0)+!eq(-10,2)" subsetting="true" />
+			<setting label="32059" id="snapshot_url3" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
+			<setting label="32060" id="stream_url3" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url3" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz3" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
-			<setting label="32022" id="ptz_sensitivity3" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" subsetting="true" />
-			<setting label="32082" id="conn3" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-14,3)+!eq(-2,0)" subsetting="true" />
-			<setting label="32083" id="alarm3" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-15,3)" />
+			<setting label="32022" id="ptz_hd_sensitivity3" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" visible="!eq(-13,1)" subsetting="true" />
+			<setting label="32022" id="ptz_sd_sensitivity3" type="slider" default="5" range="1,5,20" enable="!eq(-14,3)+!eq(-2,0)" visible="eq(-14,1)" subsetting="true" />
+			<setting label="32082" id="conn3" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-15,3)+!eq(-3,0)" subsetting="true" />
+			<setting label="32083" id="alarm3" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-16,3)" />
 			
 		<setting label="32090" type="lsep" />
 			<setting label="32091" id="motion3" type="bool" default="false" enable="gt(-2,0)" />
@@ -147,15 +151,16 @@
 			<setting label="32056" id="stream4" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream4" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream4" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url4" type="text" visible="!eq(-8,0)+!eq(-8,2)" subsetting="true" />
-			<setting label="32060" id="stream_url4" type="text" visible="!eq(-9,0)+!eq(-9,2)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url4" type="text" visible="!eq(-10,0)+!eq(-10,2)" subsetting="true" />
+			<setting label="32059" id="snapshot_url4" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
+			<setting label="32060" id="stream_url4" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url4" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz4" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
-			<setting label="32022" id="ptz_sensitivity4" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" subsetting="true" />
-			<setting label="32082" id="conn4" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-14,3)+!eq(-2,0)" subsetting="true" />
-			<setting label="32083" id="alarm4" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-15,3)" />
+			<setting label="32022" id="ptz_hd_sensitivity4" type="slider" default="2.5" range="0.5,0.5,10" enable="!eq(-13,3)+!eq(-1,0)" visible="!eq(-13,1)" subsetting="true" />
+			<setting label="32022" id="ptz_sd_sensitivity4" type="slider" default="5" range="1,5,20" enable="!eq(-14,3)+!eq(-2,0)" visible="eq(-14,1)" subsetting="true" />
+			<setting label="32082" id="conn4" type="enum" lvalues="32036|32085|32086" default="0"  enable="!eq(-15,3)+!eq(-3,0)" subsetting="true" />
+			<setting label="32083" id="alarm4" type="enum" lvalues="32035|32087|32088" default="0" enable="!eq(-16,3)" />
 			
 		<setting label="32090" type="lsep" />
 			<setting label="32091" id="motion4" type="bool" default="false" enable="gt(-2,0)" />

@@ -36,20 +36,21 @@ class AddonMonitor(xbmc.Monitor):
         if not self.stopped():
             self.stop()
 
-    # Improves UI speed by caching the result when the camera is first connected    
-    def cache_test_result(self, camera_number):
-        return bool(Window(10000).getProperty('SROOM_CACHE: test result%s' %camera_number))
 
+    # Improves UI speed by caching the result when the camera is first connected    
     def cache_set_test_result(self, camera_number, success_code):
         if success_code == 0:
-            Window(10000).setProperty('SROOM_CACHE: test result%s' %camera_number, '0')
+            Window(10000).setProperty('result%s' %camera_number, '1')
         else:
-            Window(10000).clearProperty('SROOM_CACHE: test result%s' %camera_number)
+            Window(10000).clearProperty('result%s' %camera_number)
+            
+    def cache_test_result(self, camera_number):
+        if Window(10000).getProperty('result%s' %camera_number) == '1':
+            return True
+        return False
 
-    # Used to disable or enable the preview service from activating without restarting the service
-    def isToggleSet(self):
-        return bool(Window(10000).getProperty('SROOM_CACHE: preview toggle'))
-    
+
+    # Used to disable or enable the preview service from activating without restarting the service   
     def toggle_preview(self):
         if self.isToggleSet():
             Window(10000).clearProperty('SROOM_CACHE: preview toggle')
@@ -57,6 +58,12 @@ class AddonMonitor(xbmc.Monitor):
         else:
             Window(10000).setProperty('SROOM_CACHE: preview toggle', '1')
             utils.notify(utils.translation(32227))
+            
+    def isToggleSet(self):
+        if Window(10000).getProperty('SROOM_CACHE: preview toggle') == '1':
+            return True
+        return False
+
 
     # Used to indicate that the preview window should show because it was requested manually
     def set_script(self, camera_number):
@@ -66,8 +73,10 @@ class AddonMonitor(xbmc.Monitor):
         Window(10000).clearProperty('SROOM_CACHE: Script Override %s' %camera_number)
         
     def script_override(self, camera_number):
-        override = bool(Window(10000).getProperty('SROOM_CACHE: Script Override %s' %camera_number))
-        return override
+        if Window(10000).getProperty('SROOM_CACHE: Script Override %s' %camera_number) == '1':
+            return True
+        return False
+    
 
     # Used to make the add-on globally aware if a preview window is open or not
     def set_preview_window_opened(self, camera_number):
@@ -76,10 +85,33 @@ class AddonMonitor(xbmc.Monitor):
     def set_preview_window_closed(self, camera_number):
         Window(10000).clearProperty('SROOM_CACHE: Preview Camera Open %s' %camera_number)
         self.reset_script(camera_number)
+        self.clear_request_to_close_window(camera_number)
 
     def preview_window_opened(self, camera_number):
-        state = bool(Window(10000).getProperty('SROOM_CACHE: Preview Camera Open %s' %camera_number))
-        return state
+        if Window(10000).getProperty('SROOM_CACHE: Preview Camera Open %s' %camera_number) == '1':
+            return True
+        return False
+
+
+    # New way to request to close preview windows
+    def request_to_close_window(self, camera_number):
+        Window(10000).setProperty('SROOM_CACHE: Request to Close %s' %camera_number, '1')
+
+    def clear_request_to_close_window(self, camera_number):
+        Window(10000).clearProperty('SROOM_CACHE: Request to Close %s' %camera_number)
+
+    def requested_to_close_window(self, camera_number):
+        if Window(10000).getProperty('SROOM_CACHE: Request to Close %s' %camera_number) == '1':
+            return True
+        return False
+
+
+    def set_all_preview_window_closed(self):
+        self.request_to_close_window('1')
+        self.request_to_close_window('2')
+        self.request_to_close_window('3')
+        self.request_to_close_window('4')
+        
 
     # Used to make the add-on globally aware that a camera is playing fullscreen or not
     def set_camera_playing(self, camera_number):
@@ -99,14 +131,15 @@ class AddonMonitor(xbmc.Monitor):
         singlecamera = bool(Window(10000).getProperty('SROOM_CACHE: Camera %s playing' %camera_number))
         if allcameras or singlecamera:
             return True
-        else:
-            return False
+        return False
+
 
     # Used to delay the next time the preview window is shown if it is manually dismissed
     def set_preview_window_dismissed(self, camera_number):
         dismissed_until = time() + self._dismissed_duration
         if self._dismissed_behavior == 0:
             self.dismissed_time[0] = dismissed_until
+            self.set_all_preview_window_closed()
         else:
             self.dismissed_time[int(camera_number)] = dismissed_until
 
@@ -128,6 +161,7 @@ class AddonMonitor(xbmc.Monitor):
                 return False
         return True
 
+
     # Used to determine if the window in focus is allowed to lose focus due to a preview window opening
     def window_id_check(self):
         current_dialog_id = getCurrentWindowDialogId()
@@ -137,6 +171,7 @@ class AddonMonitor(xbmc.Monitor):
             if current_window_id == window_id or current_dialog_id == window_id:
                 return True
         return False
+
 
     # Function that determines if a preview is allowed to be shown considering the global state
     def preview_not_open_allowed(self, camera_number):

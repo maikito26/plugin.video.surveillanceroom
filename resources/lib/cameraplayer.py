@@ -8,7 +8,11 @@ Module which controls how a single IP camera plays fullscreen
 
 import xbmc, xbmcgui, xbmcaddon
 import os
-import settings, utils, camerasettings, foscam2
+import settings, utils, camerasettings
+from resources.lib.ipcam_api_wrapper import CameraAPIWrapper as Camera
+from resources.lib.ipcam_api_wrapper import GENERIC_IPCAM, FOSCAM_SD
+import socket
+socket.setdefaulttimeout(settings.getSetting_int('request_timeout'))
 
 __addon__ = xbmcaddon.Addon()
 __addonid__ = __addon__.getAddonInfo('id')
@@ -73,12 +77,9 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
     Class is used to create a single camera playback window of the camera view with controls
     """
     
-    def __init__(self, camera_settings, monitor):
+    def __init__(self, camera, monitor):
         self.monitor = monitor
-        self.camera_settings = camera_settings
-        self.camera_number = camera_settings[0]
-        self.camera = foscam2.FoscamCamera(self.camera_settings)
-        self.sensitivity = settings.getSetting_float('ptz_sensitivity%s' %self.camera_number) / 10
+        self.camera = camera
     
     def __enter__(self):
         return self
@@ -88,8 +89,9 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
         self.doModal()
                
     def playVideo(self):
-        self.player = StopResumePlayer(**{'camera_number': self.camera_number, 'monitor': self.monitor, 'callback1': self.setupUi, 'callback2': self.stop})
-        url = settings.getStreamUrl(0, self.camera_number)
+        self.player = StopResumePlayer(**{'camera_number': self.camera.number, 'monitor': self.monitor, 'callback1': self.setupUi, 'callback2': self.stop})
+        
+        url = self.camera.getStreamUrl(0)
         listitem = xbmcgui.ListItem()
 
         #Hack to improve perceived responsiveness of Stream and Button Presets
@@ -126,8 +128,8 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
             self.addControl(self.flip_button)
             self.addControl(self.mirror_button)
             
-            self.mirror_button.setSelected(int(response.get('isMirror')))
-            self.flip_button.setSelected(int(response.get('isFlip')))
+            self.mirror_button.setSelected(int(response['isMirror']))
+            self.flip_button.setSelected(int(response['isFlip']))
             
             self.flip_button.setNavigation(self.camera_settings_button, self.mirror_button, self.close_button, self.camera_settings_button)
             self.mirror_button.setNavigation(self.flip_button, self.close_button, self.close_button, self.camera_settings_button)
@@ -136,11 +138,12 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
             self.close_button.setNavigation (self.mirror_button, self.flip_button, self.addon_settings_button, self.flip_button)
 
             # PTZ Buttons
-            ptz = settings.getSetting_int('ptz', self.camera_number)
-
+            ptz = settings.getSetting_int('ptz', self.camera.number)
+            
             self.pan_tilt = False
             if ptz > 0: 
                 self.pan_tilt = True
+                self.sensitivity = self.camera.ptz_sensitivity
 
             self.zoom = False
             if ptz > 1:
@@ -186,8 +189,10 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
                 self.bottom_left_button.setNavigation(self.left_button, self.flip_button, self.close_button, self.down_button)
                 self.home_button.setNavigation(self.up_button, self.down_button, self.left_button, self.right_button)
 
-                home_location = self.camera.ptz_home_location(0)
-                self.preset_button.setSelected(home_location)
+                # Work Around until Full API is implemented
+                if not self.camera._type == FOSCAM_SD:
+                    home_location = self.camera.ptz_home_location(0)
+                    self.preset_button.setSelected(home_location)
 
             if self.zoom:
                 self.zoom_in_button = Button(self, 'zoom_in', OFFSET2+X_OFFSET+32, Y_OFFSET)
@@ -196,8 +201,17 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
                 self.addControl(self.zoom_out_button)
 
                 # Navigation still requires to be set #
+
+            # Work Around until Full API is implemented
+            if self.camera._type == FOSCAM_SD:
+                print 'DISABLED CONTROLS'
+                self.preset_button.setEnabled(False)
+                self.camera_settings_button.setEnabled(False)
+                self.home_button.setEnabled(False)
+                
             
             self.setFocus(self.close_button)
+            self.setFocus(self.close_button)    #Set twice as sometimes it doesnt set?
 
     def getControl(self, control):
         return next(button for button in self.buttons if button == control)
@@ -233,7 +247,7 @@ class CameraControlsWindow(xbmcgui.WindowDialog):
             self.camera.ptz_zoom_stop()
 
     def open_camera_settings(self):
-        settings_window = camerasettings.CameraSettingsWindow(self.camera_number)
+        settings_window = camerasettings.CameraSettingsWindow(self.camera.number)
         settings_window.doModal()
         del settings_window
         utils.notify('Some changes may not take affect until the service is restarts.')
@@ -331,46 +345,44 @@ class StopResumePlayer(xbmc.Player):
             self.play(self.previous_file, listitem)
 
 
-def play(camera_number, monitor, camera_type=None):
+def play(camera_number, monitor, show_controls = None):
     """
     Function to call to play the IP Camera feed.  Determines if controls are shown or not.
 
     camera_type == 3: No Controls
     """
 
-    camera_settings = settings.getBasicSettings(camera_number)
+    camera = Camera(camera_number)
 
-    if camera_settings:
-        
-        if not camera_type:
-            camera_type = settings.getCameraType(camera_number)
+    if camera.Connected(monitor):
 
-        # Foscam Camera
-        if camera_type < 3:
-            
-            with CameraControlsWindow(camera_settings, monitor) as player:
+        if show_controls == None:
+            show_controls = False   # Generic IP Cameras default without Controls
+            if camera._type != GENERIC_IPCAM:    # Foscam Cameras default with Controls
+                show_controls = True
+
+        if show_controls:
+            with CameraControlsWindow(camera, monitor) as player:
                 player.start()
-
-        # Generic Camera or Foscam Called without Controls
+                
         else:
-            
-            url = settings.getStreamUrl(0, camera_number)
-            name = settings.getCameraName(camera_number)
-            utils.log(4, 'Camera %s ::  Name: %s;  Url: %s' %(camera_number, name, url))
+            url = camera.getStreamUrl(0)
+            name = settings.getCameraName(camera.number)
+            utils.log(4, 'Camera %s ::  Name: %s;  Url: %s' %(camera.number, name, url))
             
             listitem = xbmcgui.ListItem()
             listitem.setInfo(type = 'Video', infoLabels = {'Title': name})
-            listitem.setArt({'thumb': utils.get_icon(camera_number)})
+            listitem.setArt({'thumb': utils.get_icon(camera.number)})
             
-            player = StopResumePlayer(**{'camera_number': camera_number, 'monitor': monitor})
+            player = StopResumePlayer(**{'camera_number': camera.number, 'monitor': monitor})
 
-            utils.log(4, 'Camera %s ::  Starting generic player' %camera_number)
+            utils.log(4, 'Camera %s ::  Starting generic player' %camera.number)
             player.play(url, listitem)
             
     else:
         
-        utils.log(2, 'Camera %s is not configured correctly' %camera_number)
-        utils.notify('Camera %s not configured correctly' %camera_number)
+        utils.log(2, 'Camera %s is not configured correctly' %camera.number)
+        utils.notify('Camera %s not configured correctly' %camera.number)
 
 
 if __name__ == "__main__":
