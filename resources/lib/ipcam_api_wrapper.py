@@ -56,24 +56,24 @@ class CameraAPIWrapper(object):
             host = settings.getSetting('host', self.camera_number)
             if not host:
                 utils.log(3, 'SETTINGS :: Camera %s - No host specified.' %self.camera_number)
-                return None
+                host = ''
             
             port = settings.getSetting('port', self.camera_number)
             if not port:
                 utils.log(3, 'SETTINGS :: Camera %s - No port specified.' %self.camera_number)
-                return None
+                port = ''
             
             username = settings.getSetting('user', self.camera_number)
             invalid = settings.invalid_user_char(username)
             if invalid:
                 utils.log(3, 'SETTINGS :: Camera %s - Invalid character in user name: %s' %(self.camera_number, invalid))
-                return None
+                username = ''
             
             password = settings.getSetting('pass', self.camera_number)
             invalid = settings.invalid_password_char(password)
             if invalid:
                 utils.log(3, 'SETTINGS :: Camera %s - Invalid character in password: %s' %(self.camera_number, invalid))
-                return None
+                password = ''
 
             return [self.camera_number, host, port, username, password]
                         

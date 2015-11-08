@@ -1,3 +1,7 @@
+v1.1.1 (Nov 08 2015)
+--------------------
+- Broke a few things in the process of finalizing, fixed this... 
+
 v1.1.0 (Nov 06 2015)
 --------------------
 - Initial Foscam SD Support.  Core functions covered but waiting on official SDK approval from Foscam to make sure I can properly implement the features.  
