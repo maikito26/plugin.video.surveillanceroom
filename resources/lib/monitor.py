@@ -19,17 +19,19 @@ class AddonMonitor(xbmc.Monitor):
 
     def reset(self):
         ''' Reinitializes monitor settings '''
-        self._stop = False
-        self.dismissed_time = [0, 0, 0, 0, 0]  # Dirty fix for 4th spot since Im not reducing the camera number int
+        Window(10000).setProperty('SR_monitor', '1')
+        self.dismissed_time = [0, 0, 0, 0, 0, 0, 0]  
         self._dismissed_behavior = settings.getSetting_int('dismissed_behavior')            #0 - All dismissed, 1 - Just the window itself
         self._dismissed_duration = settings.getSetting_int('dismissed_duration') 
         self._preview_disabled_window_id = settings.getDisabledWindowIds()
 
     def stop(self):
-        self._stop = True
-
+        Window(10000).clearProperty('SR_monitor')
+        
     def stopped(self):
-        return self._stop
+        if Window(10000).getProperty('SR_monitor') == '1':
+            return False
+        return True
     
     def onSettingsChanged(self):
         utils.log(2, 'MONITOR: Settings change was detected')
@@ -38,132 +40,159 @@ class AddonMonitor(xbmc.Monitor):
 
 
     # Improves UI speed by caching the result when the camera is first connected    
-    def cache_set_test_result(self, camera_number, success_code):
+    def write_testResult(self, camera_number, success_code):
         if success_code == 0:
-            Window(10000).setProperty('result%s' %camera_number, '1')
+            Window(10000).setProperty('SR_result_%s' %camera_number, '1')
         else:
-            Window(10000).clearProperty('result%s' %camera_number)
+            Window(10000).clearProperty('SR_result_%s' %camera_number)
             
-    def cache_test_result(self, camera_number):
-        if Window(10000).getProperty('result%s' %camera_number) == '1':
+    def testResult(self, camera_number):
+        if Window(10000).getProperty('SR_result_%s' %camera_number) == '1':
             return True
         return False
 
 
-    # Used to disable or enable the preview service from activating without restarting the service   
-    def toggle_preview(self):
-        if self.isToggleSet():
-            Window(10000).clearProperty('SROOM_CACHE: preview toggle')
-            utils.notify(utils.translation(32226))
-        else:
-            Window(10000).setProperty('SROOM_CACHE: preview toggle', '1')
-            utils.notify(utils.translation(32227))
-            
-    def isToggleSet(self):
-        if Window(10000).getProperty('SROOM_CACHE: preview toggle') == '1':
-            return True
-        return False
 
 
-    # Used to indicate that the preview window should show because it was requested manually
-    def set_script(self, camera_number):
-        Window(10000).setProperty('SROOM_CACHE: Script Override %s' %camera_number, '1')
+    # NEW @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    def openRequest(self, camera_number):
+        Window(10000).setProperty('SR_openRequest_%s' %camera_number, '1')
 
-    def reset_script(self, camera_number):
-        Window(10000).clearProperty('SROOM_CACHE: Script Override %s' %camera_number)
+    def openRequest_manual(self, camera_number):
+        Window(10000).setProperty('SR_openRequest_manual_%s' %camera_number, '1')
+        self.openRequest(camera_number)
+
+    def closeRequest(self, camera_number):
+        Window(10000).setProperty('SR_closeRequest_%s' %camera_number, '1')
+
+    def set_alarmActive(self, camera_number):
+        Window(10000).setProperty('SR_alarmActive_%s' %camera_number, '1')
+
+    
+    def clear_openRequest(self, camera_number):
+        Window(10000).clearProperty('SR_openRequest_%s' %camera_number)
+
+    def clear_openRequest_manual(self, camera_number):
+        Window(10000).clearProperty('SR_openRequest_manual_%s' %camera_number)
+
+    def clear_closeRequest(self, camera_number):
+        Window(10000).clearProperty('SR_closeRequest_%s' %camera_number)
+
+    def clear_alarmActive(self, camera_number):
+        Window(10000).clearProperty('SR_alarmActive_%s' %camera_number)
         
-    def script_override(self, camera_number):
-        if Window(10000).getProperty('SROOM_CACHE: Script Override %s' %camera_number) == '1':
+        
+    def openRequested(self, camera_number):
+        if Window(10000).getProperty('SR_openRequest_%s' %camera_number) == '1':
+            return True
+        return False
+
+    def openRequested_manual(self, camera_number):
+        if Window(10000).getProperty('SR_openRequest_manual_%s' %camera_number) == '1':
+            return True
+        return False
+
+    def closeRequested(self, camera_number):
+        if Window(10000).getProperty('SR_closeRequest_%s' %camera_number) == '1':
+            return True
+        return False
+
+    def alarmActive(self, camera_number):
+        if Window(10000).getProperty('SR_alarmActive_%s' %camera_number) == '1':
+            return True
+        return False
+
+
+    def openPreview(self, camera_number):
+        self.clear_closeRequest(camera_number)
+        Window(10000).setProperty('SR_openPreview_%s' %camera_number, '1')
+        self.clear_openRequest(camera_number)
+
+    def closePreview(self, camera_number):
+        self.clear_openRequest(camera_number)
+        self.clear_openRequest_manual(camera_number)
+        Window(10000).clearProperty('SR_openPreview_%s' %camera_number)
+        self.clear_closeRequest(camera_number)
+        
+    def previewOpened(self, camera_number):
+        if Window(10000).getProperty('SR_openPreview_%s' %camera_number) == '1':
             return True
         return False
     
 
-    # Used to make the add-on globally aware if a preview window is open or not
-    def set_preview_window_opened(self, camera_number):
-        Window(10000).setProperty('SROOM_CACHE: Preview Camera Open %s' %camera_number, '1')
-        
-    def set_preview_window_closed(self, camera_number):
-        Window(10000).clearProperty('SROOM_CACHE: Preview Camera Open %s' %camera_number)
-        self.reset_script(camera_number)
-        self.clear_request_to_close_window(camera_number)
-
-    def preview_window_opened(self, camera_number):
-        if Window(10000).getProperty('SROOM_CACHE: Preview Camera Open %s' %camera_number) == '1':
+    # Used to disable or enable the preview service from activating without restarting the service   
+    def togglePreview(self):
+        if self.toggledPreview():
+            Window(10000).clearProperty('SR_togglePreview')
+            utils.notify(utils.translation(32226))
+        else:
+            Window(10000).setProperty('SR_togglePreview', '1')
+            utils.notify(utils.translation(32227))
+            
+    def toggledPreview(self):
+        if Window(10000).getProperty('SR_togglePreview') == '1':
             return True
         return False
-
-
-    # New way to request to close preview windows
-    def request_to_close_window(self, camera_number):
-        Window(10000).setProperty('SROOM_CACHE: Request to Close %s' %camera_number, '1')
-
-    def clear_request_to_close_window(self, camera_number):
-        Window(10000).clearProperty('SROOM_CACHE: Request to Close %s' %camera_number)
-
-    def requested_to_close_window(self, camera_number):
-        if Window(10000).getProperty('SROOM_CACHE: Request to Close %s' %camera_number) == '1':
-            return True
-        return False
-
-
-    def set_all_preview_window_closed(self):
-        self.request_to_close_window('1')
-        self.request_to_close_window('2')
-        self.request_to_close_window('3')
-        self.request_to_close_window('4')
         
 
     # Used to make the add-on globally aware that a camera is playing fullscreen or not
-    def set_camera_playing(self, camera_number):
-        if camera_number == 'All':
-            Window(10000).setProperty('SROOM_CACHE: AllCameras playing', '1')
+    def set_playingCamera(self, camera_number):
+        Window(10000).setProperty('SR_playingCamera_%s' %camera_number, '1')
+        if camera_number == '0':
+            self.dismissAllPreviews()
         else:
-            Window(10000).setProperty('SROOM_CACHE: Camera %s playing' %camera_number, '1')
+            self.closeRequest(camera_number)
 
-    def reset_camera_playing(self, camera_number):
-        if camera_number == 'All':
-            Window(10000).clearProperty('SROOM_CACHE: AllCameras playing')
-        else:
-            Window(10000).clearProperty('SROOM_CACHE: Camera %s playing' %camera_number)
+    def clear_playingCamera(self, camera_number):
+        Window(10000).clearProperty('SR_playingCamera_%s' %camera_number)
 
-    def camera_is_playing(self, camera_number):
-        allcameras = bool(Window(10000).getProperty('SROOM_CACHE: AllCameras playing'))
-        singlecamera = bool(Window(10000).getProperty('SROOM_CACHE: Camera %s playing' %camera_number))
-        if allcameras or singlecamera:
+    def playingCamera(self, camera_number):
+        allcameras = Window(10000).getProperty('SR_playingCamera_0')
+        singlecamera = Window(10000).getProperty('SR_playingCamera_%s' %camera_number)
+        if allcameras == '1' or singlecamera == '1':
             return True
         return False
 
 
     # Used to delay the next time the preview window is shown if it is manually dismissed
-    def set_preview_window_dismissed(self, camera_number):
+    def dismissAllPreviews(self):
+        self.closeRequest('1')
+        self.closeRequest('2')
+        self.closeRequest('3')
+        self.closeRequest('4')
+        self.closeRequest('5')
+        self.closeRequest('6')
+        
+
+    def dismissPreview(self, camera_number):
         dismissed_until = time() + self._dismissed_duration
-        if self._dismissed_behavior == 0:
+        if self._dismissed_behavior == 0:   # Dismiss All
             self.dismissed_time[0] = dismissed_until
-            self.set_all_preview_window_closed()
-        else:
+            self.dismissAllPreviews()
+        else:                               # Individual Only
             self.dismissed_time[int(camera_number)] = dismissed_until
 
-    def reset_dismissed_preview(self, camera_number):
+    def clear_dismissedPreview(self, camera_number):
         self.dismissed_time[int(camera_number)] = 0
 
-    def dismissed_preview(self, camera_number):
-        if self._dismissed_behavior == 0:
+    def previewDismissed(self, camera_number):
+        if self._dismissed_behavior == 0:   # Dismiss All
             if self.dismissed_time[0] == 0:
                 return False
             if time() > self.dismissed_time[0]:
-                self.reset_dismissed_preview(0)
+                self.clear_dismissedPreview(0)
                 return False
-        else:
+        else:                               # Individual Only
             if self.dismissed_time[int(camera_number)] == 0:
                 return False
             if time() > self.dismissed_time[int(camera_number)]:
-                self.reset_dismissed_preview(camera_number)
+                self.clear_dismissedPreview(camera_number)
                 return False
         return True
 
 
     # Used to determine if the window in focus is allowed to lose focus due to a preview window opening
-    def window_id_check(self):
+    def checkWindowID(self):
         current_dialog_id = getCurrentWindowDialogId()
         current_window_id = getCurrentWindowId()
 
@@ -174,18 +203,20 @@ class AddonMonitor(xbmc.Monitor):
 
 
     # Function that determines if a preview is allowed to be shown considering the global state
-    def preview_not_open_allowed(self, camera_number):
-        opened = self.preview_window_opened(camera_number)
-        isPlaying = self.camera_is_playing(camera_number)
-        dismissed = self.dismissed_preview(camera_number)
-        window = self.window_id_check()
-        allowed = not (isPlaying or dismissed or window or self.isToggleSet())
-        script_override = self.script_override(camera_number)
+    def previewAllowed(self, camera_number):
+        allowed = not (self.playingCamera(camera_number) or self.previewDismissed(camera_number) or self.checkWindowID() or self.toggledPreview())
+        return (not self.previewOpened(camera_number)) and allowed
+
+    #Request to test by @mrjd in forum
+    def overrideURL(self, camera_number, url):
+        Window(10000).setProperty('SR_urlOverride_%s' %camera_number, url)
         
-        #utils.log(4, 'MONITOR: Camera %s;  Preview Opened: %s;  Preview Allowed: %s;  Script Override: %s; Camera Is Playing: %s;  Camera Dismissed: %s;  Allowed on Window: %s'
-        #      %(camera_number, opened, allowed, script_override, isPlaying, dismissed, window ))
-        
-        return (not opened) and (allowed or script_override)
+    def clear_overrideURL(self, camera_number):
+        Window(10000).clearProperty('SR_urlOverride_%s' %camera_number)
+
+    def get_overrideURL(self, camera_number):
+        return Window(10000).getProperty('SR_urlOverride_%s' %camera_number)
+
 
 
 if __name__ == "__main__":

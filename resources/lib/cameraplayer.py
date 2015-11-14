@@ -302,23 +302,23 @@ class StopResumePlayer(xbmc.Player):
 
     def onPlayBackStarted(self):
         utils.log(4, 'Playback has started for camera %s' %self.camera_number)
-        self.monitor.set_camera_playing(self.camera_number)
+        self.monitor.set_playingCamera(self.camera_number)
         self.callback1()        #SetupUi() - for camera controls, waits until it is playing to draw controls for User Experience
         #self.seekTime(4)        #Potential hack for improving stream's perceived response to ptz movement
 
     def onPlayBackEnded(self):
         utils.log(4, 'Playback has ended for camera %s' %self.camera_number)
-        self.monitor.clear_camera_playing(self.camera_number)
+        self.monitor.clear_playingCamera(self.camera_number)
         self.callback2()        #stop() - for the preview window
 
     def onPlayBackStopped(self):
         utils.log(4, 'Playback has stopped for camera %s' %self.camera_number)
-        self.monitor.reset_camera_playing(self.camera_number)
+        self.monitor.clear_playingCamera(self.camera_number)
         self.callback2()        #stop() - for the preview window
 
     def stop(self):
         utils.log(4, 'Player told to stop for camera %s' %self.camera_number)
-        self.monitor.reset_camera_playing(self.camera_number)
+        self.monitor.clear_playingCamera(self.camera_number)
         xbmc.executebuiltin('PlayerControl(Stop)')          # Because player.stop() was losing the player and didn't work *sad face*
         
     def maybe_stop_current(self):

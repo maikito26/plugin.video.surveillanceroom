@@ -71,7 +71,7 @@ def enabled_preview(camera_number):
     else:
         return False
     
-def atLeastOneCamera(cameras_to_check="1234"):
+def atLeastOneCamera(cameras_to_check="123456"):
     for camera_number in cameras_to_check:
         if enabled_camera(camera_number):
             return True
@@ -79,7 +79,7 @@ def atLeastOneCamera(cameras_to_check="1234"):
 
 def getAllEnabledCameras(monitor):
     enabled_cameras = []
-    for camera_number in "1234":
+    for camera_number in "123456":
         
         enabled = enabled_camera(camera_number)
 

@@ -30,12 +30,13 @@ def param_to_dict(parameters):
     return paramDict
 
 
-def addDirectoryItem(name, url = None, isFolder = False, icon = None, fanart = None, parameters = {}):
+def addDirectoryItem(name, url = None, isFolder = False, icon = None, fanart = None, li = None, parameters = {}):
     """
     Function which adds the directory line item into the Kodi navigation menu
     """
-    
-    li = xbmcgui.ListItem(name)
+
+    if li == None:
+        li = xbmcgui.ListItem(name)
     
     if icon != None:
         li.setIconImage(icon)
@@ -136,14 +137,8 @@ def advanced_camera_menu(camera_number):
 
 def advanced_menu():                                                
     """ Second Level Menu which provides advanced options """
-
-    # Toggle Preview Ability to be activated by alarms
-    addDirectoryItem(name = utils.translation(32217),
-                     icon = utils.get_icon('settings'), 
-                     fanart = utils.get_fanart('default'),
-                     parameters = {'action': 'toggle_preview'})
     
-    for camera_number in "1234":
+    for camera_number in "123456":
         
         if settings.enabled_camera(camera_number):
             
@@ -156,25 +151,31 @@ def advanced_menu():
                              fanart = utils.get_fanart(camera_number),
                              parameters = {'action': 'advanced_camera',
                                            'camera_number': camera_number})
-    '''
-    # Restart the preview service
-    addDirectoryItem(name = 'Restart Preview Service',
+    
+
+    # Toggle Preview Ability to be activated by alarms
+    addDirectoryItem(name = utils.translation(32217),
                      icon = utils.get_icon('settings'), 
                      fanart = utils.get_fanart('default'),
-                     parameters = {'action': 'restart_service'})
-    '''
+                     parameters = {'action': 'toggle_preview'})
 
     # Add-on Settings  
     addDirectoryItem(name = utils.translation(32028),
                      icon = utils.get_icon('settings'), 
                      fanart = utils.get_fanart('default'),
                      parameters = {'action': 'settings'})
+
+    # Restart the preview service
+    addDirectoryItem(name = 'Restart Preview Service',
+                     icon = utils.get_icon('settings'), 
+                     fanart = utils.get_fanart('default'),
+                     parameters = {'action': 'restart_service'})
         
     xbmcplugin.endOfDirectory(handle=handle, succeeded=True)
     
 
 
-def main_menu(monitor):                                                
+def main_menu():                                                
     """ First Level Menu to access main functions """
 
     if settings.atLeastOneCamera():
@@ -185,23 +186,54 @@ def main_menu(monitor):
                          fanart = utils.get_fanart('default'),
                          parameters = {'action': 'all_cameras'})
 
-        for camera_number in "1234":
+        for camera_number in "123456":
             
             if settings.enabled_camera(camera_number):
                 
                 camera = Camera(camera_number)
                 list_label = settings.getCameraName(camera_number)
 
-                new_art_and_url = None
-                if settings.getSetting_int('fanart') == 0 and \
-                   camera.Connected(monitor, False):
-                    new_art_and_url = camera.getSnapShotUrl()
-                    utils.log(4, 'Get New Fanart Enabled: %s' %new_art_and_url)
+                # Build Context Menu
+                li = li = xbmcgui.ListItem(list_label)
+                context_items = []
 
+                if settings.getSetting('enabled_preview', camera_number) == 'true':
+                    #Show Preview
+                    context_items.append((utils.translation(32210), 'RunPlugin(plugin://plugin.video.surveillanceroom?action=show_preview&camera_number=%s)' %camera_number))
+
+                    #Disable Preview
+                    context_items.append((utils.translation(32212), 'RunPlugin(plugin://plugin.video.surveillanceroom?action=disable_preview&camera_number=%s)' %camera_number))
+                else:
+                    #Enable Preview
+                    context_items.append((utils.translation(32211), 'RunPlugin(plugin://plugin.video.surveillanceroom?action=enable_preview&camera_number=%s)' %camera_number))
+                
+                camera_type = settings.getCameraType(camera_number)
+                if camera_type < 3:
+                    #Play Stream no Controls
+                    context_items.append((utils.translation(32214), 'RunPlugin(plugin://plugin.video.surveillanceroom?action=single_camera_no_controls&camera_number=%s)' %camera_number))
+
+                    #Camera Settings
+                    context_items.append((utils.translation(32215), 'RunPlugin(plugin://plugin.video.surveillanceroom?action=camera_settings&camera_number=%s)' %camera_number))
+
+                # Update Fanart
+                if settings.getSetting_int('fanart') == 1:
+                    context_items.append((utils.translation(32213), 'RunPlugin(plugin://plugin.video.surveillanceroom?action=update_fanart&camera_number=%s)' %camera_number))
+                    
+                li.addContextMenuItems(context_items, replaceItems=True)
+
+                # Fanart URL
+                new_art_url = None
+                if camera.Connected(monitor):
+                    new_art_url = camera.getSnapShotUrl()
+                else:
+                    if camera.Connected(monitor, False):
+                        new_art_url = camera.getSnapShotUrl()
+                
                 # Single Camera Player for enabled cameras
-                addDirectoryItem(name = list_label,
+                addDirectoryItem(name = list_label, 
                                  icon = utils.get_icon(camera_number),
-                                 fanart = utils.get_fanart(camera_number, new_art_and_url),
+                                 fanart = utils.get_fanart(camera_number, new_art_url),
+                                 li = li, 
                                  parameters = {'action': 'single_camera',
                                                'camera_number': camera_number})
 
@@ -230,13 +262,13 @@ if __name__ == "__main__":
     params = param_to_dict(sys.argv[2])
     action = params.get('action', ' ')
     camera_number = params.get('camera_number', '')
+    monitor = monitor.AddonMonitor()
     utils.log(2, 'Handle: %s;  Params: %s;  action: %s' %(handle, params, action))
 
     
     # Main Menu
     if action == ' ':
-        monitor = monitor.AddonMonitor()
-        main_menu(monitor)
+        main_menu()
 
 
     # Settings
@@ -262,13 +294,11 @@ if __name__ == "__main__":
 
     # Single Camera Stream   
     elif action == 'single_camera': 
-        monitor = monitor.AddonMonitor()
         cameraplayer.play(camera_number, monitor)
         
 
     # Single Camera Stream without Controls   
-    elif action == 'single_camera_no_controls': 
-        monitor = monitor.AddonMonitor()
+    elif action == 'single_camera_no_controls':
         cameraplayer.play(camera_number, monitor, False)
 
 
@@ -293,15 +323,10 @@ if __name__ == "__main__":
     # Show Preview 
     elif action == 'show_preview':
         if settings.enabled_preview(camera_number):
-            monitor = monitor.AddonMonitor()
-            
-            if monitor.script_override(camera_number) and settings.getSetting_int('p_scripttoggle', camera_number) == 1:
-                # Toggles Preview open/closed if called multiple times
-                monitor.set_preview_window_closed(camera_number)
-            
+            if settings.getSetting_int('cond_manual_toggle', camera_number) == 1 and monitor.previewOpened(camera_number):
+                monitor.closeRequest(camera_number)
             else:
-                monitor.set_script(camera_number)
-                
+                monitor.openRequest_manual(camera_number)                
         else:
             utils.notify(utils.translation(32228))
 
@@ -320,29 +345,32 @@ if __name__ == "__main__":
 
     # Toggle All Preview
     elif action == 'toggle_preview':
-        monitor = monitor.AddonMonitor()
-        monitor.toggle_preview()
+        monitor.togglePreview()
 
     
     # Update Fanart
     elif action == 'update_fanart':
-        new_art_url = settings.getNewArt(camera_number, 0)
-        utils.get_fanart(camera_number, new_art_url)
-        utils.notify(utils.translation(32221))
-        xbmc.executebuiltin('Container.Refresh')
+        camera = Camera(camera_number)
+        if camera.Connected(monitor, False):
+            utils.get_fanart(camera_number, camera.getSnapShotUrl(), update = True)
+            xbmc.executebuiltin('Container.Refresh')
+            
+        else:
+            utils.notify(utils.translation(32222))
 
 
     # Restart Preview Service
     elif action == 'restart_service':
-        pass
+        monitor.stop()
 
 
     # Preliminary attempt to show an overlay based on a URL, not fully tested and does not close on its own yet
     elif action == 'show_preview_custom':
         url = params.get('url', '')
         if url != '':
-            monitor = monitor.AddonMonitor()
-            camera = Camera(camera_number)
-            previewWindow = previewgui.CameraPreviewWindow(camera, monitor)
-            previewWindow.start(url)
+            monitor.overrideURL(camera_number, url)
+            monitor.openRequest_manual(camera_number)
+        monitor.waitForAbort(2)
+        monitor.clear_overrideURL(camera_number)
+        
         

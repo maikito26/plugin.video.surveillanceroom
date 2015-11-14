@@ -86,14 +86,14 @@ class CameraAPIWrapper(object):
         if monitor:
             if useCache:
                 utils.log(2, 'SETTINGS :: Camera %s - Checking previous test result...' %self.camera_number)
-                return monitor.cache_test_result(self.camera_number)
+                return monitor.testResult(self.camera_number)
                     
             else:
                 if self.camera_type != GENERIC_IPCAM:
                     utils.log(2, 'SETTINGS :: Camera %s - Testing connection...' %self.camera_number)
 
                     success_code, response = self.camera.get_dev_state()
-                    monitor.cache_set_test_result(self.camera_number, success_code)
+                    monitor.write_testResult(self.camera_number, success_code)
                 
                     if success_code != 0:
                         return False
@@ -108,7 +108,7 @@ class CameraAPIWrapper(object):
 
                 else:
                     # Set result for Generic IP Camera
-                    monitor.cache_set_test_result(self.camera_number, 0)
+                    monitor.write_testResult(self.camera_number, 0)
 
                 return True
         return False
@@ -163,41 +163,6 @@ class CameraAPIWrapper(object):
             return self.camera.video_url   
         else:
             return self.camera.snapshot_url
-
-        '''
-    def getFoscamOverrideUrl(self, source, stream_type):   #C1?
-        ''
-        Source  -   Stream_type:
-            0   Video Stream  -  0 Video; 1 Mjpeg    
-            1   All Camera Player  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
-            2   Preview  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
-        ''
-        url = None 
-        if (source > 0 and stream_type != 1) or (source == 0 and stream_type == 1):
-            url = settings.getSetting('mjpeg_url', self.camera_number)
-            if url == '': url = self.camera.mjpeg_url    
-        elif (source == 0 and stream_type == 0):
-            url = settings.getSetting('stream_url', self.camera_number)
-            if url == '': url = self.camera.video_url
-        else:
-            url = settings.getSetting('snapshot_url', self.camera_number)
-            if url == '': url = self.camera.snapshot_url
-        return url
-
-    def getGenericIpcamUrl(self, source, stream_type):
-        ''
-        Source  -   Stream_type:
-            0   Video Stream  -  0 Video; 1 Mjpeg    
-            1   All Camera Player  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
-            2   Preview  -  0 Mjpeg; 1 Snapshot; 2 Mjpeg
-        ''
-        url = None
-        if (source > 0 and stream_type != 1) or (source == 0 and stream_type == 1): url = settings.getSetting('mjpeg_url', self.camera_number)    
-        elif (source == 0 and stream_type == 0):                                    url = settings.getSetting('stream_url', self.camera_number)   
-        else:                                                                       url = settings.getSetting('snapshot_url', self.camera_number)
-        return url
-
-        '''
     
     def getStreamType(self, source):
         '''

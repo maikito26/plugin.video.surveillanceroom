@@ -70,7 +70,7 @@ def cleanup_images():
 
 def remove_leftover_images(filename_prefix):
     """ Attempts to remove leftover images after player stops """
-
+    xbmc.sleep(1000)
     for i in xbmcvfs.listdir(__data_path__)[1]:
         if filename_prefix in i:
             xbmcvfs.delete(os.path.join(__data_path__, i))
@@ -121,7 +121,12 @@ def remove_cached_art(art):
 
 def get_icon(name_or_number):
     """ Determines which icon to display """
-    
+    #Copied from api_camera_wrapper.py
+    FOSCAM_HD = 0
+    FOSCAM_SD = 1
+    FOSCAM_HD_OVERRIDE = 2
+    GENERIC_IPCAM = 3
+        
     if name_or_number == 'default':
         icon = os.path.join(__path__, 'icon.png')
         
@@ -135,30 +140,35 @@ def get_icon(name_or_number):
         camera_type = int(__addon__.getSetting('type%s' %name_or_number))
         ptz = int(__addon__.getSetting('ptz%s' %name_or_number))
         
-        if camera_type < 3 and ptz > 0:
-            icon = os.path.join(__path__, 'resources', 'media', 'icon-foscam-hd-ptz.png')
+        if camera_type == FOSCAM_HD or camera_type == FOSCAM_HD_OVERRIDE:
+            if ptz > 0:
+                icon = os.path.join(__path__, 'resources', 'media', 'icon-foscam-hd-ptz.png')
+            else:
+                icon = os.path.join(__path__, 'resources', 'media', 'icon-foscam-hd.png')
             
-        elif camera_type < 3:
-            icon = os.path.join(__path__, 'resources', 'media', 'icon-foscam-hd.png')
+        elif camera_type == FOSCAM_SD:
+            if ptz > 0:
+                icon = os.path.join(__path__, 'resources', 'media', 'icon-foscam-sd-ptz.png')
+            else:
+                icon = os.path.join(__path__, 'resources', 'media', 'icon-foscam-sd.png')
             
         else:
             icon = os.path.join(__path__, 'resources', 'media', 'icon-generic.png')
 
     return icon
 
-def get_fanart(name_or_number, new_art_url = None):
+def get_fanart(name_or_number, new_art_url = None, update = False):
     """ Determines which fanart to show """
-    
     if str(name_or_number) == 'default':
         fanart = os.path.join(__path__, 'fanart.jpg')
         
     else:
         fanart = os.path.join(__data_path__,'fanart_camera' + str(name_or_number) + '.jpg')
 
-        if new_art_url:
+        if __addon__.getSetting('fanart') == 0 or update == True:
             remove_cached_art(fanart)
 
-        if not xbmcvfs.exists(fanart):            
+        if not xbmcvfs.exists(fanart) and new_art_url != None:            
             try:
                 log(4, 'Retrieving new Fanart for camera %s : %s' %(name_or_number, new_art_url))
                 urllib.urlretrieve(new_art_url, fanart)
@@ -173,11 +183,14 @@ def get_mjpeg_frame(stream, filename):
    
     line  = ''
     try:
+        x = 0
         while not 'length' in line.lower():
-            if '500 - Internal Server Error' in line:
+            if '500 - Internal Server Error' in line or x > 10:
                 return False
             #log(4, 'GETMJPEGFRAME: %s' %line)
             line = stream.readline()
+            x += 1
+            
 
         bytes = int(line.split(':')[-1])
         

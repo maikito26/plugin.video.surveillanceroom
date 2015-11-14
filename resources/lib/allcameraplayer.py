@@ -117,8 +117,6 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
                 img1.setImage(_holder, useCache = False)  
                     
         if len(threads) > 0:
-            # Update the global add-on setting and show the player onscreen
-            monitor.set_camera_playing('All')
             self.show()    
 
             while not monitor.abortRequested() and self.isRunning:       
@@ -225,14 +223,16 @@ def play():
     """ Main function to show all cameras """
     
     if settings.atLeastOneCamera():
+        monitor.set_playingCamera('0')
         PlayerWindow = AllCameraDisplay()
         del PlayerWindow
+        monitor.clear_playingCamera('0')
         
     else:
         utils.log(2, 'No Cameras Configured')
         utils.notify('You must configure a camera first')
 
-    monitor.reset_camera_playing('All')
+    
 
 
 if __name__ == "__main__":

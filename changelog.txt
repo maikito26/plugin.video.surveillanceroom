@@ -1,3 +1,16 @@
+v1.2.0 (Nov 15 2015)
+--------------------
+- New icons for SD/HD Foscam Cameras to differentiate
+- Updated description in addon.xml
+- Added Context Menu options to main menu cameras
+- Fixed MjpegInterlace setting on Previews
+- Decoupled the service from the preview window to make the add-on more capable and efficient.  Open and Close now done through requests
+- Ability to restart the service manually
+- Added hard timeout for mjpeg frame extractor code due to it causing a 'crashed' camera to never exit a loop
+- 5 and 6 camera support added for previews and menu, not integrated yet into All Camera player which still is cameras 1-4 only
+- Ability now to remotely change the URL of the Preview Camera as requested by @mrjd
+- Fixed any found bugs
+
 v1.1.1 (Nov 08 2015)
 --------------------
 - Broke a few things in the process of finalizing, fixed this... 
