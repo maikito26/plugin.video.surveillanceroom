@@ -1,4 +1,9 @@
-v1.2.0 (Nov 15 2015)
+v1.2.1 (Nov 15 2015)
+--------------------
+- Few fixes to logic when playing fullscreen from preview
+- Resolved negative wait time issue when trigger_interval is reported as 0 from the Foscam HD camera
+
+v1.2.0 (Nov 14 2015)
 --------------------
 - New icons for SD/HD Foscam Cameras to differentiate
 - Updated description in addon.xml

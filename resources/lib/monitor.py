@@ -138,10 +138,7 @@ class AddonMonitor(xbmc.Monitor):
     # Used to make the add-on globally aware that a camera is playing fullscreen or not
     def set_playingCamera(self, camera_number):
         Window(10000).setProperty('SR_playingCamera_%s' %camera_number, '1')
-        if camera_number == '0':
-            self.dismissAllPreviews()
-        else:
-            self.closeRequest(camera_number)
+        self.dismissAllPreviews()
 
     def clear_playingCamera(self, camera_number):
         Window(10000).clearProperty('SR_playingCamera_%s' %camera_number)
@@ -205,7 +202,7 @@ class AddonMonitor(xbmc.Monitor):
     # Function that determines if a preview is allowed to be shown considering the global state
     def previewAllowed(self, camera_number):
         allowed = not (self.playingCamera(camera_number) or self.previewDismissed(camera_number) or self.checkWindowID() or self.toggledPreview())
-        return (not self.previewOpened(camera_number)) and allowed
+        return ((not self.previewOpened(camera_number)) and allowed)
 
     #Request to test by @mrjd in forum
     def overrideURL(self, camera_number, url):

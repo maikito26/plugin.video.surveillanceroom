@@ -39,9 +39,13 @@ class CameraPreviewThread(threading.Thread):
         self.motion_enabled, self.sound_enabled = settings.getEnabledAlarms(self.camera.number)
         trigger_interval = self.camera.getTriggerInterval(self.motion_enabled, self.sound_enabled)
 
+        if trigger_interval < 1:    # Fix for Foscam Cameras that apparently get the data messed up
+            trigger_interval = check_interval
+
 
         ### MAIN LOOP ###
         while not monitor.abortRequested() and not monitor.stopped():
+            print self.camera.number + ' ' + 'Start of Camera Loop %s %s' %(monitor.abortRequested(), monitor.stopped())
             alarmActive = True
             if not monitor.openRequested_manual(self.camera.number):
                 alarmActive = self.alarmStateHealthCheck()
@@ -70,6 +74,8 @@ class CameraPreviewThread(threading.Thread):
                 sleep = check_interval              
             else:
                 sleep = trigger_interval - 1
+
+            print self.camera.number + ' ' + 'Sleep %s, Check %s, Trigger %s' %(sleep, check_interval, trigger_interval)
 
             monitor.waitForAbort(sleep)
         ### /MAIN LOOP ###
@@ -115,7 +121,11 @@ class CameraPreviewThread(threading.Thread):
 
                 #Loop to keep retrying the connection ever 60 seconds
                 x = 0
-                while success_code != 0 and not monitor.abortRequested() and not monitor.stopped():
+                while success_code != 0:
+                    print self.camera.number + ' ' + 'Start of Broken Camera Loop' 
+                    if monitor.abortRequested() or monitor.stopped():
+                        return False
+                    
                     if x > 60:
                         x = 0
                         utils.log(3, 'SERVICE  :: Camera %s did not give response 0, gave response %d.  Retrying every 60 seconds.' %(self.camera.number, success_code))
@@ -140,13 +150,6 @@ class CameraPreviewThread(threading.Thread):
     
         monitor.clear_alarmActive(self.camera.number)   
         return False
-    
-                                           
-    def stop(self):
-        self._stop = True
-
-    def stopped(self):
-        return self._stop
 
 
                                        
@@ -164,7 +167,7 @@ class service():
         
         for camera_number in "123456":
 
-            utils.log(2, 'SERVICE  :: Camera %s;  Enabled: %s;  Preview Enabled: %s' %(camera_number, settings.enabled_camera(camera_number), settings.enabled_preview(camera_number)))
+            utils.log(1, 'SERVICE  :: Camera %s;  Enabled: %s;  Preview Enabled: %s' %(camera_number, settings.enabled_camera(camera_number), settings.enabled_preview(camera_number)))
             if settings.enabled_camera(camera_number):
                 camera = Camera(camera_number)
 
@@ -207,21 +210,15 @@ class service():
 
     def restart(self):
         self.stop()
-        monitor.waitForAbort(3)
-        new_instance = self.instance + 1
-                                       
-        #with q.mutex:
-        #    q.queue.clear()
-                                       
+        monitor.waitForAbort(2)
+        new_instance = self.instance + 1                                       
         start(new_instance)
 
     def stop(self):
         for t in self.threads:
-            t.stop()
             t.join()
 
                       
-
 
 def start(new_instance = 0):
     """

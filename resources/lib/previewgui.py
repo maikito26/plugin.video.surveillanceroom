@@ -109,7 +109,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         self.close_button.setAnimations(animations)                    
            
         self.setProperty('zorder', "99")
-        
+
+        self.playFullscreen = False
         self.stop() #Initializes state and makes ready to be used
 
     def start(self):
@@ -134,52 +135,47 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         self.wait_closeRequest()
         
 
-    def stop(self, wait = True):
+    def stop(self, playFullscreen = False):
         self.monitor.closePreview(self.camera.number)
         self.close()
-        if wait:
-            self.wait()
+        
+        if not self.monitor.abortRequested() and not self.monitor.stopped():
+
+            if playFullscreen:
+                cameraplayer.play(self.camera.number, self.monitor)
+
+            self.wait_openRequest()
 
     def wait_openRequest(self):
-        while not self.monitor.abortRequested() and not self.monitor.stopped():
-            if self.monitor.openRequested(self.camera.number):
-                self.openRequest_manual = self.monitor.openRequested_manual(self.camera.number)
-                break
+        while not self.monitor.abortRequested() and not self.monitor.stopped() and not self.monitor.openRequested(self.camera.number):
             self.monitor.waitForAbort(.5)
 
         if not self.monitor.abortRequested() and not self.monitor.stopped():
+            self.openRequest_manual = self.monitor.openRequested_manual(self.camera.number)
             self.start()
-
-    def wait(self):
-        if not self.monitor.abortRequested() and not self.monitor.stopped():
-            self.wait_openRequest()
-
-
+            
     def wait_closeRequest(self):
-        # Duration is 0 if Close Condition is Manual or Alarm only, otherwise set based on source
-        duration = 0
+        duration = 0    # Duration is 0 if Close Condition is Manual or Alarm only, otherwise set based on source
+        
         if not self.monitor.openRequested_manual(self.camera.number):
             if self.cond_service == CONDITION_DURATION_NO_ALARM or self.cond_service == CONDITION_DURATION:
-                duration = time.time() + self.dur_service
-
+                duration = self.dur_service
         else:            
             if self.cond_manual == CONDITION_DURATION_NO_ALARM or self.cond_manual == CONDITION_DURATION:
-                duration = time.time() + self.dur_manual
+                duration = self.dur_manual
+
+        openDuration = time.time() + duration
 
         # Loop Condition Checking
-        while not self.monitor.abortRequested() and not self.monitor.stopped():
+        while not self.monitor.abortRequested() and not self.monitor.stopped() and self.monitor.previewOpened(self.camera.number) and not self.monitor.closeRequested(self.camera.number):
+            if ((self.cond_service == CONDITION_DURATION_NO_ALARM and not self.monitor.openRequested_manual(self.camera.number)) or \
+                (self.cond_manual == CONDITION_DURATION_NO_ALARM and self.monitor.openRequested_manual(self.camera.number))) \
+                and self.monitor.alarmActive(self.camera.number):
 
-            # Requested by Service
-            if not self.monitor.openRequested_manual(self.camera.number):
-                if self.cond_service == CONDITION_DURATION_NO_ALARM and self.monitor.alarmActive(self.camera.number):
-                    duration = time.time() + self.dur_service
-
-            # Requested Manually
-            elif self.cond_manual == CONDITION_DURATION_NO_ALARM and self.monitor.alarmActive(self.camera.number):
-                duration = time.time() + self.dur_manual
+                openDuration = time.time() + duration
 
             # Duration Check if Close Condition is not Manual or Alarm only
-            if duration > 0 and time.time() > duration: 
+            if (duration > 0 and time.time() > openDuration): 
                 self.monitor.closeRequest(self.camera.number)
 
             # Check if close Request
@@ -189,13 +185,7 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
             self.monitor.waitForAbort(.5)
         
         self.stop()
-        
 
-    
-    def playFullscreen(self):
-        self.stop(wait = False)
-        cameraplayer.play(self.camera.number, self.monitor)
-        self.wait()
 
     def onControl(self, control):
         if control == self.close_button:
@@ -208,10 +198,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
             self.stop()
             
         elif action == ACTION_SELECT_ITEM:
-            self.playFullscreen()
+            self.stop(playFullscreen = True)
             
-
-
 
 
 
@@ -242,7 +230,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
                 self.img1.setImage(_error, useCache = False)
                 break
 
-        utils.remove_leftover_images('%s_%s.' %(self.prefix, self.camera.number))
+        if not not self.monitor.abortRequested() and not self.monitor.stopped():
+            utils.remove_leftover_images('%s_%s.' %(self.prefix, self.camera.number))
 
 
 
@@ -268,7 +257,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
                 self.img1.setImage(_error, useCache = False)
                 break
 
-        utils.remove_leftover_images('%s_%s.' %(self.prefix, self.camera.number))
+        if not not self.monitor.abortRequested() and not self.monitor.stopped():
+            utils.remove_leftover_images('%s_%s.' %(self.prefix, self.camera.number))
 
 
 
@@ -303,7 +293,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
                 self.img1.setImage(_error, useCache = False)
                 break
 
-        utils.remove_leftover_images('%s_%s.' %(self.prefix, self.camera.number))
+        if not not self.monitor.abortRequested() and not self.monitor.stopped():
+            utils.remove_leftover_images('%s_%s.' %(self.prefix, self.camera.number))
 
         
 if __name__ == "__main__":
