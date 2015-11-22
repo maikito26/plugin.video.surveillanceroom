@@ -38,6 +38,7 @@ class FoscamCamera(object):
         '''
         If ``daemon`` is True, the command will be sent unblockedly.
         '''
+        self.number = camera_settings[0]
         self.host = camera_settings[1]
         self.port = camera_settings[2]
         self.usr = camera_settings[3]
@@ -96,14 +97,14 @@ class FoscamCamera(object):
 
         # Parse parameters from response string.
         if self.verbose:
-            utils.log(4, 'Send Foscam command: %s' % cmdurl)
+            utils.log(4, 'Camera %s :: Send Foscam command: %s' %(self.number, cmdurl))
         try:
             raw_string = ''
             raw_string = urllib.urlopen(cmdurl).read()
             root = ET.fromstring(raw_string)
         except:
             if self.verbose:
-                utils.log(3, 'Foscam exception: ' + raw_string)
+                utils.log(3, 'Camera %s :: Foscam exception: %s' %(self.number, raw_string))
             return ERROR_FOSCAM_UNAVAILABLE, None
         code = ERROR_FOSCAM_UNKNOWN
         params = dict()
@@ -125,7 +126,7 @@ class FoscamCamera(object):
                     params[child.tag] = child.text
 
         if self.verbose:
-            utils.log(4, 'Received Foscam response: %s, %s' % (code, params))
+            utils.log(4, 'Camera %s :: Received Foscam response: %s, %s' %(self.number, code, params))
         return code, params
 
     def execute_command(self, cmd, params=None, callback=None):

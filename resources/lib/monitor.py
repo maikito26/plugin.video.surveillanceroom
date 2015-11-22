@@ -7,7 +7,7 @@ This module is used to monitor the entire add-on and allow communication between
 """
 
 import xbmc
-from xbmcgui import Window, getCurrentWindowId, getCurrentWindowDialogId
+from xbmcgui import Window, getCurrentWindowId, getCurrentWindowDialogId, ListItem
 from time import time
 import settings, utils
 
@@ -34,7 +34,7 @@ class AddonMonitor(xbmc.Monitor):
         return True
     
     def onSettingsChanged(self):
-        utils.log(2, 'MONITOR: Settings change was detected')
+        utils.log(2, 'MONITOR :: Settings change was detected')
         if not self.stopped():
             self.stop()
 
@@ -213,6 +213,48 @@ class AddonMonitor(xbmc.Monitor):
 
     def get_overrideURL(self, camera_number):
         return Window(10000).getProperty('SR_urlOverride_%s' %camera_number)
+
+
+    def maybe_stop_current(self):
+        """ If there is a video playing, it will capture the source and current playback time """
+        if settings.getSetting_bool('resume'):
+            player = xbmc.Player()
+            if player.isPlaying():
+                Window(10000).setProperty('SR_resumeTime', str(player.getTime()))
+                Window(10000).setProperty('SR_previousFile', player.getPlayingFile())
+                player.stop()
+                xbmc.executebuiltin('PlayerControl(Stop)')          # Because player.stop() was losing the player and didn't work *sad face*
+                
+            else:
+                Window(10000).clearProperty('SR_resumeTime')
+                Window(10000).clearProperty('SR_previousFile')
+
+    def maybe_resume_previous(self):
+        """ If a video was playing previously, it will restart it at the resume time """
+        if settings.getSetting_bool('resume'):
+            try:
+                previous_file = Window(10000).getProperty('SR_previousFile')
+            except:
+                previous_file = ''
+                
+            if previous_file != '':
+                resume_time = float(Window(10000).getProperty('SR_resumeTime'))
+                Window(10000).clearProperty('SR_resumeTime')
+                Window(10000).clearProperty('SR_previousFile')
+                
+                resume_time_adjustment = settings.getSetting_int('resume_time')
+                resume_time_str = "{0:.1f}".format(resume_time - resume_time_adjustment)
+                listitem = ListItem()
+                listitem.setProperty('StartOffset', resume_time_str)
+
+                player = xbmc.Player()  
+                player.play(previous_file, listitem)
+
+    def resume_previous_file(self):
+        if settings.getSetting_bool('resume') and Window(10000).getProperty('SR_previousFile') != '':
+            return True
+        return False
+
 
 
 

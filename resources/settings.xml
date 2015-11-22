@@ -20,7 +20,9 @@
 	<category label="32019">
 		<setting label="32020" id="fanart" type="enum" lvalues="32030|32031" default="0" />
 		<setting label="32024" id="notifications" type="bool" default="true" />
-		<setting label="32021" id="resume_time" type="slider" default="10" range="0,1,20" option="int" />
+		<setting label="32043" id="fullscreen_player" type="enum" lvalues="32049|32048|32047" default="0" />
+		<setting label="32042" id="resume" type="bool" default="true" />
+		<setting label="32021" id="resume_time" type="slider" default="10" range="0,1,20" enable="eq(-1,true)" subsetting="true" option="int" />
 		<setting label="32026" id="request_timeout" type="slider" default="3" range="1,1,15" option="int" />
 		<setting label="32025" id="hack1" type="bool" default="false" />
 		<setting label="32023" id="log_level" type="enum" lvalues="32032|32033|32034|32039" default="0" />

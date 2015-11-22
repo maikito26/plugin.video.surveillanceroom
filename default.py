@@ -263,7 +263,8 @@ if __name__ == "__main__":
     action = params.get('action', ' ')
     camera_number = params.get('camera_number', '')
     monitor = monitor.AddonMonitor()
-    utils.log(2, 'Handle: %s;  Params: %s;  action: %s' %(handle, params, action))
+    utils.log(2, 'REQUEST  :: Params: %s' %params)
+    
 
     
     # Main Menu
@@ -294,12 +295,12 @@ if __name__ == "__main__":
 
     # Single Camera Stream   
     elif action == 'single_camera': 
-        cameraplayer.play(camera_number, monitor)
+        cameraplayer.play(camera_number)
         
 
     # Single Camera Stream without Controls   
     elif action == 'single_camera_no_controls':
-        cameraplayer.play(camera_number, monitor, False)
+        cameraplayer.play(camera_number, False)
 
 
     # Reboot Camera  

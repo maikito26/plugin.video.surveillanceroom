@@ -117,11 +117,12 @@ class AllCameraDisplay(xbmcgui.WindowDialog):
                 img1.setImage(_holder, useCache = False)  
                     
         if len(threads) > 0:
-            self.show()    
+            self.doModal()    
 
-            while not monitor.abortRequested() and self.isRunning:       
-                monitor.waitForAbort(1)
+            #while not monitor.abortRequested() and self.isRunning:       
+            #    monitor.waitForAbort(1)
 
+            monitor.maybe_resume_previous()
             monitor.waitForAbort(1)
             utils.remove_leftover_images('AllCamera')
             

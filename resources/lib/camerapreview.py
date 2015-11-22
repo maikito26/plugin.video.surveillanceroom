@@ -8,7 +8,7 @@ This module is used to draw and show the preview window
 
 import xbmc, xbmcaddon, xbmcgui, xbmcvfs
 import os, requests, time
-import utils, settings, cameraplayer
+import utils, settings, cameraplayer, allcameraplayer, monitor
 from urllib import urlretrieve
 import threading
 import socket
@@ -35,6 +35,10 @@ CONDITION_DURATION = 1
 CONDITION_MANUAL = 2
 CONDITION_NO_ALARM = 3
 
+#Fullscreen Player types
+CAMERAWITHOUTCONTROLS = 0
+CAMERAWITHCONTROLS = 1
+ALLCAMERAPLAYER = 2
 
 class Button(xbmcgui.ControlButton):
     """ Class reclasses the ControlButton class for use in this addon. """
@@ -56,8 +60,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
     """ Class is used to create the picture-in-picture window of the camera view """
     
     def __init__(self, camera, monitor):
-        self.monitor = monitor
         self.camera = camera
+        self.monitor = monitor
         self.cond_service = settings.getSetting_int('cond_service', self.camera.number)
         self.cond_manual = settings.getSetting_int('cond_manual', self.camera.number)
         self.dur_service = settings.getSetting_int('dur_service', self.camera.number)
@@ -120,6 +124,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         if url == '':
             url = self.camera.getStreamUrl(2, stream_type)
 
+        utils.log(2, 'Camera %s :: Preview Window Opened - Manual: %s;  Stream Type: %d;  URL: %s' %(self.camera.number, self.monitor.openRequest_manual(self.camera.number), stream_type, url))
+        
         if stream_type == 0:
             t = threading.Thread(target = self.getImagesMjpeg, args = (url,))         
         elif stream_type == 1:
@@ -138,13 +144,25 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
     def stop(self, playFullscreen = False):
         self.monitor.closePreview(self.camera.number)
         self.close()
+        utils.log(2, 'Camera %s :: Preview Window Closed' %self.camera.number)
         
         if not self.monitor.abortRequested() and not self.monitor.stopped():
 
             if playFullscreen:
-                cameraplayer.play(self.camera.number, self.monitor)
+                self.monitor.maybe_stop_current()
+                fullscreenplayer = settings.getSetting_int('fullscreen_player')
 
+                if fullscreenplayer == CAMERAWITHCONTROLS:
+                    cameraplayer.play(self.camera.number)
+                    
+                elif fullscreenplayer == CAMERAWITHOUTCONTROLS:
+                    cameraplayer.play(self.camera.number, show_controls = False)
+                
+                elif fullscreenplayer == ALLCAMERAPLAYER:
+                    allcameraplayer.play()
+                
             self.wait_openRequest()
+
 
     def wait_openRequest(self):
         while not self.monitor.abortRequested() and not self.monitor.stopped() and not self.monitor.openRequested(self.camera.number):
@@ -153,6 +171,7 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         if not self.monitor.abortRequested() and not self.monitor.stopped():
             self.openRequest_manual = self.monitor.openRequested_manual(self.camera.number)
             self.start()
+
             
     def wait_closeRequest(self):
         duration = 0    # Duration is 0 if Close Condition is Manual or Alarm only, otherwise set based on source
@@ -166,6 +185,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
 
         openDuration = time.time() + duration
 
+        #print 'Wait for close - duration: %d;  openDuration: %d' %(duration, openDuration)
+
         # Loop Condition Checking
         while not self.monitor.abortRequested() and not self.monitor.stopped() and self.monitor.previewOpened(self.camera.number) and not self.monitor.closeRequested(self.camera.number):
             if ((self.cond_service == CONDITION_DURATION_NO_ALARM and not self.monitor.openRequested_manual(self.camera.number)) or \
@@ -173,6 +194,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
                 and self.monitor.alarmActive(self.camera.number):
 
                 openDuration = time.time() + duration
+                #print '%s, %s, %s, %s' %(self.cond_service, self.cond_manual, self.monitor.openRequested_manual(self.camera.number), self.monitor.alarmActive(self.camera.number))  
+                #print 'Wait for close Loop - duration: %d;  openDuration: %d;  time: %d' %(duration, openDuration, time.time())
 
             # Duration Check if Close Condition is not Manual or Alarm only
             if (duration > 0 and time.time() > openDuration): 
@@ -189,15 +212,19 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
 
     def onControl(self, control):
         if control == self.close_button:
+            utils.log(2, 'Camera %s :: Closing Preview Manually - Mouse Request' %self.camera.number)
             self.monitor.dismissPreview(self.camera.number)
             self.stop()
             
     def onAction(self, action):
         if action in (ACTION_PREVIOUS_MENU, ACTION_BACKSPACE, ACTION_NAV_BACK):
+            utils.log(2, 'Camera %s :: Closing Preview Manually - Keyboard Request' %self.camera.number)
             self.monitor.dismissPreview(self.camera.number)
             self.stop()
             
         elif action == ACTION_SELECT_ITEM:
+            utils.log(2, 'Camera %s :: Playing Fullscreen from Preview.' %self.camera.number)
+            self.monitor.dismissPreview(self.camera.number)
             self.stop(playFullscreen = True)
             
 
@@ -226,7 +253,7 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
                 x += 1
                 
             else:
-                utils.log(3, 'Camera %s - Error on MJPEG' %self.camera.number)
+                utils.log(3, 'Camera %s :: Error updating preview image on MJPEG' %self.camera.number)
                 self.img1.setImage(_error, useCache = False)
                 break
 
@@ -253,7 +280,7 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
                     x += 1
                     
             except Exception, e:
-                utils.log(3, 'Camera %s - Error on Snapshot: %s' %(self.camera.number, e))
+                utils.log(3, 'Camera %s :: Error updating preview image on Snapshot: %s' %(self.camera.number, e))
                 self.img1.setImage(_error, useCache = False)
                 break
 
@@ -289,7 +316,7 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
                 x += 1
                 
             else:
-                utils.log(3, 'Camera %s - Error on MJPEG' %self.camera.number)
+                utils.log(3, 'Camera %s :: Error updating preview image on MJPEG' %self.camera.number)
                 self.img1.setImage(_error, useCache = False)
                 break
 

@@ -55,18 +55,18 @@ class CameraAPIWrapper(object):
               
             host = settings.getSetting('host', self.camera_number)
             if not host:
-                utils.log(3, 'SETTINGS :: Camera %s - No host specified.' %self.camera_number)
+                utils.log(3, 'Camera %s :: No host specified.' %self.camera_number)
                 host = ''
             
             port = settings.getSetting('port', self.camera_number)
             if not port:
-                utils.log(3, 'SETTINGS :: Camera %s - No port specified.' %self.camera_number)
+                utils.log(3, 'Camera %s :: No port specified.' %self.camera_number)
                 port = ''
             
             username = settings.getSetting('user', self.camera_number)
             invalid = settings.invalid_user_char(username)
             if invalid:
-                utils.log(3, 'SETTINGS :: Camera %s - Invalid character in user name: %s' %(self.camera_number, invalid))
+                utils.log(3, 'Camera %s :: Invalid character in user name: %s' %(self.camera_number, invalid))
                 username = ''
             
             password = settings.getSetting('pass', self.camera_number)
@@ -85,12 +85,12 @@ class CameraAPIWrapper(object):
         # Camera test and caching logic
         if monitor:
             if useCache:
-                utils.log(2, 'SETTINGS :: Camera %s - Checking previous test result...' %self.camera_number)
+                utils.log(2, 'Camera %s :: Checking previous camera test connection result...' %self.camera_number)
                 return monitor.testResult(self.camera_number)
                     
             else:
                 if self.camera_type != GENERIC_IPCAM:
-                    utils.log(2, 'SETTINGS :: Camera %s - Testing connection...' %self.camera_number)
+                    utils.log(2, 'Camera %s :: Testing network connection to camera...' %self.camera_number)
 
                     success_code, response = self.camera.get_dev_state()
                     monitor.write_testResult(self.camera_number, success_code)
@@ -98,7 +98,7 @@ class CameraAPIWrapper(object):
                     if success_code != 0:
                         return False
             
-                    utils.log(2, 'SETTINGS :: Successful connection to Camera %s' %self.camera_number)
+                    utils.log(2, 'Camera %s :: Connection successful.' %self.camera_number)
 
                     # MJPEG Enable - for Service Run.  Ensures MJPEG URLs are Successful  MAYBE MOVE THIS LATER SOMEWHERE??? 
                     if settings.getSetting_int('stream', self.camera_number) == 1 or \
@@ -195,7 +195,7 @@ class CameraAPIWrapper(object):
                 if reset_mode == 2:
                     reset_mode = 3
                 self.camera.ptz_home_location(reset_mode)
-                utils.log(2, 'SETTINGS :: Reset Camera %s to the home location' %self.camera_number)
+                utils.log(2, 'Camera %s :: Resetting to the home location' %self.camera_number)
 
     def getTriggerInterval(self, motion_enabled, sound_enabled):
         """ Gets the alarm trigger interval from the camera """
@@ -203,12 +203,16 @@ class CameraAPIWrapper(object):
 
         if self.camera_type != FOSCAM_SD and \
            self.camera_type != GENERIC_IPCAM:
-            motion_trigger_interval = int(self.camera.get_motion_detect_config()[1]['triggerInterval'])
-            sound_trigger_interval = int(self.camera.get_sound_detect_config()[1]['triggerInterval'])
-        
-            if motion_enabled and sound_enabled:    trigger_interval = min(motion_trigger_interval, sound_trigger_interval)    
-            elif motion_enabled:                    trigger_interval = motion_trigger_interval  
-            elif sound_enabled:                     trigger_interval = sound_trigger_interval
+            try:
+                motion_trigger_interval = int(self.camera.get_motion_detect_config()[1]['triggerInterval'])
+                sound_trigger_interval = int(self.camera.get_sound_detect_config()[1]['triggerInterval'])
+            
+                if motion_enabled and sound_enabled:    trigger_interval = min(motion_trigger_interval, sound_trigger_interval)    
+                elif motion_enabled:                    trigger_interval = motion_trigger_interval  
+                elif sound_enabled:                     trigger_interval = sound_trigger_interval
+                
+            except:
+                pass
             
         return trigger_interval
 

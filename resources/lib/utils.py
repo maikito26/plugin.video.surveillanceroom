@@ -34,6 +34,21 @@ if not xbmcvfs.exists(__data_path__):
     except:
         pass
 
+def log_level():
+    global __addon__
+    global __log_level__
+    __addon__ = xbmcaddon.Addon()
+    __log_level__ = int(__addon__.getSetting('log_level'))
+    
+    if __log_level__ == 0:
+        return 'Off'
+    elif __log_level__ == 1:
+        return 'Normal'
+    elif __log_level__ == 2:
+        return 'Verbose'
+    else:
+        return 'Debug'
+    
 def translation(id): 
     return __addon__.getLocalizedString(id)
 
@@ -49,16 +64,16 @@ def notify(msg):
 def log(level=4, value=''):
     msg = str(value)
     if level == 3:                              #Error
-        xbmc.log(__log_info__ + 'ERROR   : ' + msg, xbmc.LOGERROR)
+        xbmc.log(__log_info__ + '### ERROR ### : ' + msg, xbmc.LOGERROR)
 
     elif __log_level__ > 0 and level == 1: #Normal
-        xbmc.log(__log_info__ + 'NORMAL  : ' + msg, xbmc.LOGNOTICE)
+        xbmc.log(__log_info__ + msg, xbmc.LOGNOTICE)
 
     elif __log_level__ > 1 and level == 2:                  #Verbose
-        xbmc.log(__log_info__ + 'VERBOSE : ' + msg, xbmc.LOGNOTICE)
+        xbmc.log(__log_info__ + msg, xbmc.LOGNOTICE)
         
     elif __log_level__ > 2 and level == 4:                            #DEBUG
-        xbmc.log(__log_info__ + 'DEBUG   : ' + msg, xbmc.LOGNOTICE)
+        xbmc.log(__log_info__ + msg, xbmc.LOGNOTICE)
   
 def cleanup_images():
     """ Final Cleanup of images when Kodi shuts down """

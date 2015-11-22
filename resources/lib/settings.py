@@ -53,8 +53,7 @@ def getSetting_int(setting, camera_number=''):
 def getSetting_bool(setting, camera_number=''):
     if 'true' in __addon__.getSetting(setting + camera_number):
         return True
-    else:
-        return False
+    return False
 
 def getSetting_float(setting, camera_number=''):
     return float(__addon__.getSetting(setting + camera_number))
