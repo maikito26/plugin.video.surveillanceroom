@@ -7,7 +7,7 @@ Main Menu and External Functionality
 
 import sys, os, urllib
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon, xbmcvfs
-from resources.lib import settings, monitor, allcameraplayer, cameraplayer, camerasettings, utils, previewgui
+from resources.lib import settings, monitor, allcameraplayer, cameraplayer, camerasettings, utils
 from resources.lib.ipcam_api_wrapper import CameraAPIWrapper as Camera
 
 __addon__ = xbmcaddon.Addon() 

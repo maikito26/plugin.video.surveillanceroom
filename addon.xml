@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.surveillanceroom" name="Surveillance Room" version="1.2.2" provider-name="Maikito26">
+<addon id="plugin.video.surveillanceroom" name="Surveillance Room" version="1.2.3" provider-name="Maikito26">
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
     <import addon="script.module.requests" version="2.3.0" optional="false"/>
