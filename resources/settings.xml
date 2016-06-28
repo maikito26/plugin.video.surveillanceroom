@@ -72,6 +72,8 @@
 			<setting label="32093" id="interval1" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
 			<setting label="32094" id="position1" type="labelenum" lvalues="32100|32101|32102|32103" />
 			<setting label="32095" id="scaling1" type="slider" default="0.8" range="0.5,0.1,3.0" />
+            <setting label="32120" id="width1" type="number" default="380" />
+            <setting label="32121" id="height1" type="number" default="120" />            
 			<setting label="32096" id="dur_service1" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32097" id="dur_manual1" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="cond_service1" type="enum" lvalues="32104|32038|32031|32105" default="0" />
@@ -106,6 +108,8 @@
 			<setting label="32093" id="interval2" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
 			<setting label="32094" id="position2" type="labelenum" lvalues="32101|32102|32103|32100" />
 			<setting label="32095" id="scaling2" type="slider" default="0.8" range="0.5,0.1,3.0" />
+            <setting label="32120" id="width2" type="number" default="380" />
+            <setting label="32121" id="height2" type="number" default="120" />            
 			<setting label="32096" id="dur_service2" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32097" id="dur_manual2" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="cond_service2" type="enum" lvalues="32104|32038|32031|32105" default="0" />
@@ -140,6 +144,8 @@
 			<setting label="32093" id="interval3" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
 			<setting label="32094" id="position3" type="labelenum" lvalues="32102|32103|32100|32101" />
 			<setting label="32095" id="scaling3" type="slider" default="0.8" range="0.5,0.1,3.0" />
+            <setting label="32120" id="width3" type="number" default="380" />
+            <setting label="32121" id="height3" type="number" default="120" />
 			<setting label="32096" id="dur_service3" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32097" id="dur_manual3" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="cond_service3" type="enum" lvalues="32104|32038|32031|32105" default="0" />
@@ -174,6 +180,8 @@
 			<setting label="32093" id="interval4" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
 			<setting label="32094" id="position4" type="labelenum" lvalues="32103|32100|32101|32102" />
 			<setting label="32095" id="scaling4" type="slider" default="0.8" range="0.5,0.1,3.0" />
+            <setting label="32120" id="width4" type="number" default="380" />
+            <setting label="32121" id="height4" type="number" default="120" />            
 			<setting label="32096" id="dur_service4" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32097" id="dur_manual4" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="cond_service4" type="enum" lvalues="32104|32038|32031|32105" default="0" />
@@ -208,6 +216,8 @@
 			<setting label="32093" id="interval5" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
 			<setting label="32094" id="position5" type="labelenum" lvalues="32100|32101|32102|32103" />
 			<setting label="32095" id="scaling5" type="slider" default="0.8" range="0.5,0.1,3.0" />
+            <setting label="32120" id="width5" type="number" default="380" />
+            <setting label="32121" id="height5" type="number" default="120" />
 			<setting label="32096" id="dur_service5" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32097" id="dur_manual5" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="cond_service5" type="enum" lvalues="32104|32038|32031|32105" default="0" />
@@ -242,6 +252,8 @@
 			<setting label="32093" id="interval6" type="slider" default="4" range="1,1,15" option="int" enable="gt(-4,0)" />
 			<setting label="32094" id="position6" type="labelenum" lvalues="32100|32101|32102|32103" />
 			<setting label="32095" id="scaling6" type="slider" default="0.8" range="0.5,0.1,3.0" />
+            <setting label="32120" id="width6" type="number" default="380" />
+            <setting label="32121" id="height6" type="number" default="120" />
 			<setting label="32096" id="dur_service6" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32097" id="dur_manual6" type="slider" default="12" range="1,1,30" option="int" />
 			<setting label="32098" id="cond_service6" type="enum" lvalues="32104|32038|32031|32105" default="0" />

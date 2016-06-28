@@ -119,6 +119,8 @@
   <string id="32117">Virtual Keyboard</string>
   <string id="32118">Player Controls</string>
   <string id="32119">Window IDs (separated by comma)</string>
+  <string id="32120">Width</string>
+  <string id="32121">Height</string>
   
   <string id="32201">No host specified</string>
   <string id="32202">Please check your network connection and the camera host and port. You must use an administrator account.</string>
