@@ -70,8 +70,8 @@ class CameraPreviewWindow(xbmcgui.WindowDialog):
         self.buttons = []
         
         # Positioning of the window       
-        WIDTH = 320
-        HEIGHT = 180
+        WIDTH = settings.getSetting_int('width', self.camera.number)
+        HEIGHT = settings.getSetting_int('height', self.camera.number)
         
         scaling = settings.getSetting_float('scaling', self.camera.number)
         
