@@ -46,18 +46,23 @@
 
 
 	<category label="32001">
+		<setting label="32051" id="type1" type="enum" lvalues="32065|32066|32067|32068" default="2" />
+		<setting label="33001" type="lsep" />
+		<setting label="33002" type="lsep" />
+		<setting label="33003" type="lsep" />
+		<setting type="sep" />
 		<setting label="32050" id="name1" type="text" />
-		<setting label="32051" id="type1" type="enum" lvalues="32065|32066|32067|32068" default="0" />
-			<setting label="32052" id="host1" type="text" enable="!eq(-1,3)" />
-			<setting label="32053" id="port1" type="number" default="88" enable="!eq(-2,3)" />
-			<setting label="32054" id="user1" type="text" default="admin" enable="!eq(-3,3)" />
-			<setting label="32055" id="pass1" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32052" id="host1" type="text" enable="!eq(-2,3)" />
+			<setting label="32053" id="port1" type="number" default="88" enable="!eq(-3,3)" />
+			<setting label="32062" id="rtsp1" type="number" default="554" enable="!eq(-4,3)" />
+			<setting label="32054" id="user1" type="text" default="admin" enable="!eq(-5,3)" />
+			<setting label="32055" id="pass1" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream1" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream1" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32058" id="preview_stream1" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url1" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
-			<setting label="32060" id="stream_url1" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url1" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32058" id="preview_stream1" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32059" id="snapshot_url1" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32060" id="stream_url1" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url1" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz1" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -82,18 +87,23 @@
 	</category>
 	
 	<category label="32002">
+		<setting label="32051" id="type2" type="enum" lvalues="32065|32066|32067|32068" default="2" />
+		<setting label="33001" type="lsep" />
+		<setting label="33002" type="lsep" />
+		<setting label="33003" type="lsep" />
+		<setting type="sep" />
 		<setting label="32050" id="name2" type="text" />
-		<setting label="32051" id="type2" type="enum" lvalues="32065|32066|32067|32068" default="0" />
-			<setting label="32052" id="host2" type="text" enable="!eq(-1,3)" />
-			<setting label="32053" id="port2" type="number" default="88" enable="!eq(-2,3)" />
-			<setting label="32054" id="user2" type="text" default="admin" enable="!eq(-3,3)" />
-			<setting label="32055" id="pass2" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32052" id="host2" type="text" enable="!eq(-2,3)" />
+			<setting label="32053" id="port2" type="number" default="88" enable="!eq(-3,3)" />
+			<setting label="32062" id="rtsp2" type="number" default="554" enable="!eq(-4,3)" />
+			<setting label="32054" id="user2" type="text" default="admin" enable="!eq(-5,3)" />
+			<setting label="32055" id="pass2" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream2" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream2" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32058" id="preview_stream2" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url2" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
-			<setting label="32060" id="stream_url2" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url2" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32058" id="preview_stream2" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32059" id="snapshot_url2" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32060" id="stream_url2" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url2" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz2" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -118,18 +128,23 @@
 	</category>
 	
 	<category label="32003">
+		<setting label="32051" id="type3" type="enum" lvalues="32065|32066|32067|32068" default="2" />
+		<setting label="33001" type="lsep" />
+		<setting label="33002" type="lsep" />
+		<setting label="33003" type="lsep" />
+		<setting type="sep" />
 		<setting label="32050" id="name3" type="text" />
-		<setting label="32051" id="type3" type="enum" lvalues="32065|32066|32067|32068" default="0" />
-			<setting label="32052" id="host3" type="text" enable="!eq(-1,3)" />
-			<setting label="32053" id="port3" type="number" default="88" enable="!eq(-2,3)" />
-			<setting label="32054" id="user3" type="text" default="admin" enable="!eq(-3,3)" />
-			<setting label="32055" id="pass3" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32052" id="host3" type="text" enable="!eq(-2,3)" />
+			<setting label="32053" id="port3" type="number" default="88" enable="!eq(-3,3)" />
+			<setting label="32062" id="rtsp3" type="number" default="554" enable="!eq(-4,3)" />
+			<setting label="32054" id="user3" type="text" default="admin" enable="!eq(-5,3)" />
+			<setting label="32055" id="pass3" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream3" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream3" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32058" id="preview_stream3" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url3" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
-			<setting label="32060" id="stream_url3" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url3" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32058" id="preview_stream3" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32059" id="snapshot_url3" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32060" id="stream_url3" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url3" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz3" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -154,18 +169,23 @@
 	</category>
 	
 	<category label="32004">
+		<setting label="32051" id="type4" type="enum" lvalues="32065|32066|32067|32068" default="2" />
+		<setting label="33001" type="lsep" />
+		<setting label="33002" type="lsep" />
+		<setting label="33003" type="lsep" />
+		<setting type="sep" />
 		<setting label="32050" id="name4" type="text" />
-		<setting label="32051" id="type4" type="enum" lvalues="32065|32066|32067|32068" default="0" />
-			<setting label="32052" id="host4" type="text" enable="!eq(-1,3)" />
-			<setting label="32053" id="port4" type="number" default="88" enable="!eq(-2,3)" />
-			<setting label="32054" id="user4" type="text" default="admin" enable="!eq(-3,3)" />
-			<setting label="32055" id="pass4" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32052" id="host4" type="text" enable="!eq(-2,3)" />
+			<setting label="32053" id="port4" type="number" default="88" enable="!eq(-3,3)" />
+			<setting label="32062" id="rtsp4" type="number" default="554" enable="!eq(-4,3)" />
+			<setting label="32054" id="user4" type="text" default="admin" enable="!eq(-5,3)" />
+			<setting label="32055" id="pass4" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream4" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream4" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32058" id="preview_stream4" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url4" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
-			<setting label="32060" id="stream_url4" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url4" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32058" id="preview_stream4" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32059" id="snapshot_url4" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32060" id="stream_url4" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url4" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz4" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -190,18 +210,23 @@
 	</category>
 	
 	<category label="32005">
+		<setting label="32051" id="type5" type="enum" lvalues="32065|32066|32067|32068" default="2" />
+		<setting label="33001" type="lsep" />
+		<setting label="33002" type="lsep" />
+		<setting label="33003" type="lsep" />
+		<setting type="sep" />
 		<setting label="32050" id="name5" type="text" />
-		<setting label="32051" id="type5" type="enum" lvalues="32065|32066|32067|32068" default="0" />
-			<setting label="32052" id="host5" type="text" enable="!eq(-1,3)" />
-			<setting label="32053" id="port5" type="number" default="88" enable="!eq(-2,3)" />
-			<setting label="32054" id="user5" type="text" default="admin" enable="!eq(-3,3)" />
-			<setting label="32055" id="pass5" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32052" id="host5" type="text" enable="!eq(-2,3)" />
+			<setting label="32053" id="port5" type="number" default="88" enable="!eq(-3,3)" />
+			<setting label="32062" id="rtsp5" type="number" default="554" enable="!eq(-4,3)" />
+			<setting label="32054" id="user5" type="text" default="admin" enable="!eq(-5,3)" />
+			<setting label="32055" id="pass5" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream5" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream5" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32058" id="preview_stream5" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url5" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
-			<setting label="32060" id="stream_url5" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url5" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32058" id="preview_stream5" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32059" id="snapshot_url5" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32060" id="stream_url5" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url5" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz5" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -226,18 +251,23 @@
 	</category>
 	
 	<category label="32006">
+		<setting label="32051" id="type6" type="enum" lvalues="32065|32066|32067|32068" default="2" />
+		<setting label="33001" type="lsep" />
+		<setting label="33002" type="lsep" />
+		<setting label="33003" type="lsep" />
+		<setting type="sep" />
 		<setting label="32050" id="name6" type="text" />
-		<setting label="32051" id="type6" type="enum" lvalues="32065|32066|32067|32068" default="0" />
-			<setting label="32052" id="host6" type="text" enable="!eq(-1,3)" />
-			<setting label="32053" id="port6" type="number" default="88" enable="!eq(-2,3)" />
-			<setting label="32054" id="user6" type="text" default="admin" enable="!eq(-3,3)" />
-			<setting label="32055" id="pass6" type="text" option="hidden" enable="!eq(-4,3)" />
+			<setting label="32052" id="host6" type="text" enable="!eq(-2,3)" />
+			<setting label="32053" id="port6" type="number" default="88" enable="!eq(-3,3)" />
+			<setting label="32062" id="rtsp6" type="number" default="554" enable="!eq(-4,3)" />
+			<setting label="32054" id="user6" type="text" default="admin" enable="!eq(-5,3)" />
+			<setting label="32055" id="pass6" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream6" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream6" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32058" id="preview_stream6" type="enum" lvalues="32072|32073|32074" default="0" />
-			<setting label="32059" id="snapshot_url6" type="text" visible="!eq(-8,0)+!eq(-8,1)" subsetting="true" />
-			<setting label="32060" id="stream_url6" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url6" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32058" id="preview_stream6" type="enum" lvalues="32072|32073|32074" default="1" />
+			<setting label="32059" id="snapshot_url6" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32060" id="stream_url6" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url6" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz6" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
