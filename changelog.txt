@@ -1,3 +1,7 @@
+v1.2.3s (May 5 2018)
+--------------------
+- third attempt to make a clean branch for settings-revamp pull request
+
 v1.2.3 (Nov 30 2015)
 --------------------
 - Removed import of previewgui in default.py
