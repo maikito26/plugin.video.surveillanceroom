@@ -59,9 +59,9 @@
 			<setting label="32056" id="stream1" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream1" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream1" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32059" id="snapshot_url1" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
-			<setting label="32060" id="stream_url1" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url1" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
+			<setting label="32059" id="snapshot_url1" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32060" id="stream_url1" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url1" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz1" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -99,9 +99,9 @@
 			<setting label="32056" id="stream2" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream2" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream2" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32059" id="snapshot_url2" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
-			<setting label="32060" id="stream_url2" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url2" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
+			<setting label="32059" id="snapshot_url2" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32060" id="stream_url2" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url2" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz2" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -139,9 +139,9 @@
 			<setting label="32056" id="stream3" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream3" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream3" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32059" id="snapshot_url3" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
-			<setting label="32060" id="stream_url3" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url3" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
+			<setting label="32059" id="snapshot_url3" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32060" id="stream_url3" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url3" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz3" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -179,9 +179,9 @@
 			<setting label="32056" id="stream4" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream4" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream4" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32059" id="snapshot_url4" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
-			<setting label="32060" id="stream_url4" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url4" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
+			<setting label="32059" id="snapshot_url4" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32060" id="stream_url4" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url4" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz4" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -219,9 +219,9 @@
 			<setting label="32056" id="stream5" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream5" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream5" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32059" id="snapshot_url5" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
-			<setting label="32060" id="stream_url5" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url5" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
+			<setting label="32059" id="snapshot_url5" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32060" id="stream_url5" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url5" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz5" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
@@ -259,9 +259,9 @@
 			<setting label="32056" id="stream6" type="enum" lvalues="32071|32072" default="0" />
 			<setting label="32057" id="allstream6" type="enum" lvalues="32072|32073|32074" default="1" />
 			<setting label="32058" id="preview_stream6" type="enum" lvalues="32072|32073|32074" default="1" />
-			<setting label="32059" id="snapshot_url6" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
-			<setting label="32060" id="stream_url6" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
-			<setting label="32061" id="mjpeg_url6" type="text" visible="!eq(-12,0)+!eq(-12,1)" subsetting="true" />
+			<setting label="32059" id="snapshot_url6" type="text" visible="!eq(-9,0)+!eq(-9,1)" subsetting="true" />
+			<setting label="32060" id="stream_url6" type="text" visible="!eq(-10,0)+!eq(-10,1)" subsetting="true" />
+			<setting label="32061" id="mjpeg_url6" type="text" visible="!eq(-11,0)+!eq(-11,1)" subsetting="true" />
 			
 		<setting label="32080" type="lsep" />
 			<setting label="32081" id="ptz6" type="enum" lvalues="32035|32084|32081" default="0" enable="!eq(-12,3)" />
