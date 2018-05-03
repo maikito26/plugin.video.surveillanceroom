@@ -54,7 +54,6 @@
 		<setting label="32050" id="name1" type="text" />
 			<setting label="32052" id="host1" type="text" enable="!eq(-2,3)" />
 			<setting label="32053" id="port1" type="number" default="88" enable="!eq(-3,3)" />
-			<setting label="32062" id="rtsp1" type="number" default="554" enable="!eq(-4,3)" />
 			<setting label="32054" id="user1" type="text" default="admin" enable="!eq(-5,3)" />
 			<setting label="32055" id="pass1" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream1" type="enum" lvalues="32071|32072" default="0" />
@@ -95,7 +94,6 @@
 		<setting label="32050" id="name2" type="text" />
 			<setting label="32052" id="host2" type="text" enable="!eq(-2,3)" />
 			<setting label="32053" id="port2" type="number" default="88" enable="!eq(-3,3)" />
-			<setting label="32062" id="rtsp2" type="number" default="554" enable="!eq(-4,3)" />
 			<setting label="32054" id="user2" type="text" default="admin" enable="!eq(-5,3)" />
 			<setting label="32055" id="pass2" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream2" type="enum" lvalues="32071|32072" default="0" />
@@ -136,7 +134,6 @@
 		<setting label="32050" id="name3" type="text" />
 			<setting label="32052" id="host3" type="text" enable="!eq(-2,3)" />
 			<setting label="32053" id="port3" type="number" default="88" enable="!eq(-3,3)" />
-			<setting label="32062" id="rtsp3" type="number" default="554" enable="!eq(-4,3)" />
 			<setting label="32054" id="user3" type="text" default="admin" enable="!eq(-5,3)" />
 			<setting label="32055" id="pass3" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream3" type="enum" lvalues="32071|32072" default="0" />
@@ -177,7 +174,6 @@
 		<setting label="32050" id="name4" type="text" />
 			<setting label="32052" id="host4" type="text" enable="!eq(-2,3)" />
 			<setting label="32053" id="port4" type="number" default="88" enable="!eq(-3,3)" />
-			<setting label="32062" id="rtsp4" type="number" default="554" enable="!eq(-4,3)" />
 			<setting label="32054" id="user4" type="text" default="admin" enable="!eq(-5,3)" />
 			<setting label="32055" id="pass4" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream4" type="enum" lvalues="32071|32072" default="0" />
@@ -218,7 +214,6 @@
 		<setting label="32050" id="name5" type="text" />
 			<setting label="32052" id="host5" type="text" enable="!eq(-2,3)" />
 			<setting label="32053" id="port5" type="number" default="88" enable="!eq(-3,3)" />
-			<setting label="32062" id="rtsp5" type="number" default="554" enable="!eq(-4,3)" />
 			<setting label="32054" id="user5" type="text" default="admin" enable="!eq(-5,3)" />
 			<setting label="32055" id="pass5" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream5" type="enum" lvalues="32071|32072" default="0" />
@@ -259,7 +254,6 @@
 		<setting label="32050" id="name6" type="text" />
 			<setting label="32052" id="host6" type="text" enable="!eq(-2,3)" />
 			<setting label="32053" id="port6" type="number" default="88" enable="!eq(-3,3)" />
-			<setting label="32062" id="rtsp6" type="number" default="554" enable="!eq(-4,3)" />
 			<setting label="32054" id="user6" type="text" default="admin" enable="!eq(-5,3)" />
 			<setting label="32055" id="pass6" type="text" option="hidden" enable="!eq(-6,3)" />
 			<setting label="32056" id="stream6" type="enum" lvalues="32071|32072" default="0" />
