@@ -805,7 +805,7 @@ class FoscamCamera(object):
 
 class FoscamCameraOverride(FoscamCamera):
     def __init__(self, camera_settings, daemon = False, verbose = True):
-        super(FoscamCamera, self).init(camera_settings, daemon = False, verbose = True)
+        FoscamCamera.__init__(self, camera_settings, daemon, verbose)
         self.camera_number = camera_settings[0]
         #self.host = camera_settings[1]
         #self.port = camera_settings[2]
@@ -817,19 +817,19 @@ class FoscamCameraOverride(FoscamCamera):
     def video_url(self):
         _videoUrl = settings.getSetting('stream_url', self.camera_number)
         if _videoUrl == '':
-            _videoUrl = "rtsp://{0}:{1}@{2}/videoMain".format(self.usr, self.pwd, self.url)
+            _videoUrl = "rtsp://{0}:{1}@{2}:554/videoMain".format(self.usr, self.pwd, self.host)
         return _videoUrl
 
     @property
     def mjpeg_url(self):
         _mjpegUrl = settings.getSetting('mjpeg_url', self.camera_number)
         if mjpegUrl == '':
-            _mjpegUrl = "http://{0}/cgi-bin/CGIStream.cgi?cmd={GetMJStream}&usr={1}&pwd={2}&".format(self.url, self.usr, self.pwd)
+            _mjpegUrl = "http://{0}/cgi-bin/CGIStream.cgi?cmd=GetMJStream&usr={1}&pwd={2}&".format(self.url, self.usr, self.pwd)
         return _mjpegUrl
 
     @property
     def snapshot_url(self):
         _snapshotUrl = settings.getSetting('snapshot_url', self.camera_number)
         if _snapshotUrl == '':
-            _snapshotUrl = "http://{0}/cgi-bin/CGIProxy.fcgi?cmd={snapPicture2}&usr={1}&pwd={2}&".format(self.url, self.usr, self.pwd)
+            _snapshotUrl = "http://{0}/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr={1}&pwd={2}&".format(self.url, self.usr, self.pwd)
         return _snapshotUrl
